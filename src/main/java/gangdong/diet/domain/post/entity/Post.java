@@ -1,4 +1,4 @@
-package gangdong.diet.domain.post;
+package gangdong.diet.domain.post.entity;
 
 
 import jakarta.persistence.Entity;
