@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: Diet
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        default_batch_fetch_size: 100
+    open-in-view: true
+
+
+
+springdoc:
+  packages-to-scan: com.cw.restory.web
+  default-consumes-media-type: application/json;
+  default-produces-media-type: application/json;
+  show-actuator: true
+  swagger-ui:
+    path: /api/docs
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operations-sorter: method
+    tags-sorter: alpha
+    default-model-expand-depth: 2
