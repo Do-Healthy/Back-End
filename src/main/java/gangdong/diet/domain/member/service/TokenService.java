@@ -15,18 +15,18 @@ public class TokenService {
     private final RedisTemplate<String, String> redisTemplate;
 
     // Redis에 Refresh Token 저장
-    public void saveRefreshToken(String username, String refreshToken) {
-        redisTemplate.opsForValue().set("refresh_token:" + username, refreshToken, 24, TimeUnit.HOURS);
-        log.info("refresh_token:" + username + refreshToken, 24, TimeUnit.HOURS);
+    public void saveRefreshToken(String memberEmail, String refreshToken) {
+        redisTemplate.opsForValue().set("refresh_token:" + memberEmail, refreshToken, 24, TimeUnit.HOURS);
+        log.info("refresh_token:" + memberEmail + refreshToken, 24, TimeUnit.HOURS);
     }
 
     // Redis에서 Refresh Token 조회
-    public String getRefreshToken(String username) {
-        return redisTemplate.opsForValue().get("refresh_token:" + username);
+    public String getRefreshToken(String memberEmail) {
+        return redisTemplate.opsForValue().get("refresh_token:" + memberEmail);
     }
 
     // Redis에서 Refresh Token 삭제
-    public void deleteRefreshToken(String username) {
-        redisTemplate.delete("refresh_token:" + username);
+    public void deleteRefreshToken(String memberEmail) {
+        redisTemplate.delete("refresh_token:" + memberEmail);
     }
 }

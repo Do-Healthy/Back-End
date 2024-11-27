@@ -59,13 +59,13 @@ public class JwtController {
         }
 
         //DB에 저장되어 있는지 확인
-        String username = jwtUtil.getUsername(access);
+        String memberEmail = jwtUtil.getMemberEmail(access);
         String role = jwtUtil.getRole(access);
 
-        log.info("####### username ####### {}",username);
+        log.info("####### username ####### {}",memberEmail);
         log.info("####### role ####### {}",role);
 
-        String isExist = "refresh_token:"+tokenService.getRefreshToken(username);
+        String isExist = "refresh_token:"+tokenService.getRefreshToken(memberEmail);
 
         if (isExist == null) {
             //response body
@@ -73,8 +73,8 @@ public class JwtController {
         }
 
         //make new JWT
-        String newAccess = jwtUtil.createAccessToken(username, role);
-        String newRefresh = jwtUtil.createRefreshToken(username);
+        String newAccess = jwtUtil.createAccessToken(memberEmail, role);
+        String newRefresh = jwtUtil.createRefreshToken(memberEmail);
 
         //Refresh 토큰 저장 DB에 기존의 Refresh 토큰 삭제 후 새 Refresh 토큰 저장
         tokenService.saveRefreshToken("refresh",newRefresh);

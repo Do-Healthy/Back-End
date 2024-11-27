@@ -7,15 +7,15 @@ import lombok.Data;
 @Data
 public class SaveMemberDTO {
     private Long id;
-    private String username;
+    private String memberEmail;
     private String password;
     private String name;
     private String role;
 
     @Builder
-    public SaveMemberDTO(Long id, String username, String password, String name, String role) {
+    public SaveMemberDTO(Long id, String memberEmail, String password, String name, String role) {
         this.id = id;
-        this.username = username;
+        this.memberEmail = memberEmail;
         this.password = password;
         this.name = name;
         this.role = role;
@@ -23,7 +23,7 @@ public class SaveMemberDTO {
 
     public SaveMemberDTO(Member member) {
         this.id = member.getId();
-        this.username = member.getUsername();
+        this.memberEmail = member.getMemberEmail();
         this.password = member.getPassword();
         this.name = member.getName();
         this.role = member.getRole();

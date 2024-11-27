@@ -35,10 +35,10 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
-        String username = authentication.getName();
+        String memberEmail = authentication.getName();
 
-        String accessToken = jwtUtil.createAccessToken(username, role);
-        String refreshToken = jwtUtil.createRefreshToken(username);
+        String accessToken = jwtUtil.createAccessToken(memberEmail, role);
+        String refreshToken = jwtUtil.createRefreshToken(memberEmail);
 
         response.addCookie(createCookie("access", accessToken));
         response.addCookie(createCookie("refresh", refreshToken));
