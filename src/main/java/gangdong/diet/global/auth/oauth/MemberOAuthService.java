@@ -44,7 +44,7 @@ public class MemberOAuthService extends DefaultOAuth2UserService {
 
         String email = oAuth2User.getAttribute("email");
         SaveMemberDTO member =
-                new SaveMemberDTO(memberRepository.findByUsername(email)
+                new SaveMemberDTO(memberRepository.findByMemberEmail(email)
                         .orElseGet(()->createMember(oAuth2User,oAuth2MemberInfo)));
 
         return new MemberDetails(member);
@@ -55,7 +55,7 @@ public class MemberOAuthService extends DefaultOAuth2UserService {
         String providerId = oAuth2MemberInfo.getProviderId();
 
         Member member = Member.builder()
-                .username(oAuth2User.getAttribute("email"))
+                .memberEmail(oAuth2User.getAttribute("email"))
                 .name(oAuth2User.getAttribute("name"))
                 .password(passwordEncoder.encode("Do_Health"))
                 .provider(provider)

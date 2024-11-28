@@ -27,7 +27,7 @@ public class MemberService {
         Timestamp timestamp = Timestamp.valueOf(now);
 
         Member member = Member.builder()
-                .username(memberDTO.getUsername())
+                .memberEmail(memberDTO.getMemberEmail())
                 .password(memberDTO.getPassword())
                 .name(memberDTO.getName())
                 .role(memberDTO.getRole())

@@ -68,11 +68,11 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        // username, role 값을 획득
-        String username = jwtUtil.getUsername(accessToken);
+        // memberEmail, role 값을 획득
+        String memberEmail = jwtUtil.getMemberEmail(accessToken);
         String role = jwtUtil.getRole(accessToken);
 
-        SaveMemberDTO saveMemberDTO = SaveMemberDTO.builder().username(username).role(role).build();
+        SaveMemberDTO saveMemberDTO = SaveMemberDTO.builder().memberEmail(memberEmail).role(role).build();
         MemberDetails customUserDetails = new MemberDetails(saveMemberDTO);
 
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());

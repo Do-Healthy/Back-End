@@ -29,8 +29,8 @@ public class SwaggerConfig {
     }
     private Info apiInfo() {
         return new Info()
-                .title("리스토리 API")
-                .description("리스토리 API 입니다.")
+                .title("Do Healthy API")
+                .description("Do Healthy API 입니다.")
                 .version("1.0.0");
     }
 }

@@ -1,16 +1,14 @@
-package gangdong.diet.domain.post.entity;
-
+package gangdong.diet.domain.review.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @Entity
-public class PostImage {
+public class ReviewImage {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,14 +18,13 @@ public class PostImage {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Post post;
-
-//    private String type; 타입이 필요할 경우라면 추가
+    private Review review;
 
     @Builder
-    public PostImage(String imageUrl, String description, Post post) {
+    private ReviewImage(String imageUrl, String description, Review review) {
         this.imageUrl = imageUrl;
         this.description = description;
-        this.post = post;
+        this.review = review;
     }
+
 }

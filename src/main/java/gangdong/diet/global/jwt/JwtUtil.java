@@ -28,9 +28,9 @@ public class JwtUtil {
         this.redisTemplate = redisTemplate;
     }
 
-    // 토큰에서 "username" 클레임을 추출하는 메서드. JWT 토큰을 파싱하여 username 값을 반환.
-    public String getUsername(String token){
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("username", String.class);
+    // 토큰에서 "memberEmail" 클레임을 추출하는 메서드. JWT 토큰을 파싱하여 memberEmail 값을 반환.
+    public String getMemberEmail(String token){
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("memberEmail", String.class);
     }
 
     // 토큰에서 "role" 클레임을 추출하는 메서드. JWT 토큰을 파싱하여 role 값을 반환.
@@ -66,9 +66,9 @@ public class JwtUtil {
 //                .compact();
 //    }
 
-    public String createAccessToken(String username, String role) {
+    public String createAccessToken(String memberEmail, String role) {
         return Jwts.builder()
-                .claim("username", username)
+                .claim("memberEmail", memberEmail)
                 .claim("access","access_token")
                 .claim("role", role)
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRE_TIME))
@@ -76,16 +76,16 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String createRefreshToken(String username) {
+    public String createRefreshToken(String memberEmail) {
         String refreshToken = Jwts.builder()
-                .claim("username",username)
+                .claim("memberEmail",memberEmail)
                 .claim("refresh","refresh_token")
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
 
         // Redis에 저장
-        redisTemplate.opsForValue().set("refresh_token:" + username, refreshToken, REFRESH_TOKEN_EXPIRE_TIME, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set("refresh_token:" + memberEmail, refreshToken, REFRESH_TOKEN_EXPIRE_TIME, TimeUnit.MILLISECONDS);
         return refreshToken;
     }
 
