@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .successHandler(oAuthSuccessHandler)
                         .userInfoEndpoint()
                         .userService(memberOAuthService)
+
                 );
 
         return http.build();

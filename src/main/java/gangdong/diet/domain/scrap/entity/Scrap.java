@@ -3,10 +3,7 @@ package gangdong.diet.domain.scrap.entity;
 import gangdong.diet.domain.member.entity.Member;
 import gangdong.diet.domain.post.entity.Post;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

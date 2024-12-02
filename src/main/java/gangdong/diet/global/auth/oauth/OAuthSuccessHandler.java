@@ -43,7 +43,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         response.addCookie(createCookie("access", accessToken));
         response.addCookie(createCookie("refresh", refreshToken));
 
-        response.sendRedirect("http://localhost:5500/success_page.html");
+        response.sendRedirect("http://localhost:5500/html/main.html");
     }
 
     private Cookie createCookie(String key, String value) {

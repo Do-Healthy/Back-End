@@ -31,7 +31,6 @@ public class Member extends BaseTimeEntity {
     @OneToMany(mappedBy = "member")
     private List<Scrap> scraps = new ArrayList<>();
 
-
     @Builder
     public Member(Long id, String memberEmail, String password, String name, String role, String provider, String providerId) {
         this.id = id;
