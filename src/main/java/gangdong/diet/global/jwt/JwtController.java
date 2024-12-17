@@ -35,8 +35,6 @@ public class JwtController {
             }
         }
 
-
-
         if (refresh == null) {
             //response status code
             return ResponseEntity.badRequest().body("Refresh Token not exist 1");

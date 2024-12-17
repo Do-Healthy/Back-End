@@ -16,7 +16,7 @@ public class PostIngredientResponse {
     public PostIngredientResponse(PostIngredient postIngredient) {
         this.id = postIngredient.getIngredient().getId();
         this.name = postIngredient.getIngredient().getName();
-        this.amount = postIngredient.getIngredient().getUnit() + postIngredient.getAmount();
+        this.amount = postIngredient.getAmount();
     }
 
 }

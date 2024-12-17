@@ -41,6 +41,7 @@ public class JwtUtil {
     public Long getId(String token){
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("id",Long.class);
     }
+
     // 토큰의 유효 기간이 만료되었는지 확인하는 메서드. 토큰의 만료 날짜와 현재 날짜를 비교하여 만료 여부 반환.
     public Boolean isExpired(String token){
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
@@ -88,9 +89,5 @@ public class JwtUtil {
         redisTemplate.opsForValue().set("refresh_token:" + memberEmail, refreshToken, REFRESH_TOKEN_EXPIRE_TIME, TimeUnit.MILLISECONDS);
         return refreshToken;
     }
-
-
-
-
 
 }

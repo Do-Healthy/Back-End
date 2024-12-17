@@ -6,7 +6,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
-public interface ScrapRepository extends JpaRepository<Scrap, Long> {
+
+public interface ScrapRepository extends JpaRepository<Scrap, Long>, ScrapQRepository {
+    boolean existsByMemberIdAndPostId(Long memberId, Long postId);
     Optional<Scrap> findByPostIdAndMemberId(Long postId, Long memberId);
 }

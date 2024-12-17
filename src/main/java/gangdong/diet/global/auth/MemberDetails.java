@@ -1,6 +1,7 @@
 package gangdong.diet.global.auth;
 
 import gangdong.diet.domain.member.dto.SaveMemberDTO;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+@Getter
 @RequiredArgsConstructor
 public class MemberDetails implements UserDetails, OAuth2User {
 

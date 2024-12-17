@@ -8,9 +8,7 @@ import java.util.List;
 @Getter
 public class ReviewRequest {
 
-    private Long postId;
     private String content;
     private int rating;
-    private List<MultipartFile> images;
 
 }

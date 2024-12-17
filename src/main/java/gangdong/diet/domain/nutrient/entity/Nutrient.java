@@ -1,9 +1,14 @@
 package gangdong.diet.domain.nutrient.entity;
 
+import gangdong.diet.domain.post.entity.PostNutrient;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -16,6 +21,8 @@ public class Nutrient {
     @Column(length = 100)
     private String name;
 
-    @Column(length = 30)
-    private String unit;
+    @Builder
+    private Nutrient(String name) {
+        this.name = name;
+    }
 }

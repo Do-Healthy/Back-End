@@ -6,9 +6,22 @@ spring:
       hibernate:
         format_sql: true
         use_sql_comments: true
-        default_batch_fetch_size: 100
+        show_sql: true
+    #        default_batch_fetch_size: 100
     open-in-view: true
 
+cloud:
+  aws:
+    s3:
+      bucket: dohealthy-bucket
+    region:
+      static: ap-northeast-2
+      auto: false
+    stack:
+      auto: false
+    credentials:
+      access-key: ${IAM_ACCESS_KEY}
+      secret-key: ${IAM_SECRET_KEY}
 
 
 springdoc:
