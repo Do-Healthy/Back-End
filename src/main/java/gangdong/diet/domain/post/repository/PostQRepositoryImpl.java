@@ -32,13 +32,13 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
     public List<Post> findByRecipeName(Long cursorId, List<String> keywords, int size) {
         return queryFactory
                 .selectDistinct(post).from(post)
-                .leftJoin(post.ingredients, postIngredient).fetchJoin()
+                .join(post.ingredients, postIngredient).fetchJoin()
                 .join(postIngredient.ingredient, ingredient).fetchJoin()
 
-                .leftJoin(post.nutrients, postNutrient).fetchJoin()
+                .join(post.nutrients, postNutrient).fetchJoin()
                 .join(postNutrient.nutrient, nutrient).fetchJoin()
 
-                .leftJoin(post.reviews, review).fetchJoin()
+//                .leftJoin(post.reviews, review).fetchJoin()
                 .leftJoin(post.postImages, postImage).fetchJoin()
                 .where(
                         eqCursorId(cursorId),
@@ -55,18 +55,20 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
 //        return new SliceImpl<>(results, PageRequest.of(0,size), hasNext);
     }
 
+
+
     @Override
     public List<Post> findByIngredient(Long cursorId, List<String> keywords, int size) {
         return queryFactory
-                .selectDistinct(post).from(postIngredient)
+                .selectDistinct(post).from(post) // Todo postIngredient를 from으로 둘 경우?
                 .leftJoin(post.ingredients, postIngredient).fetchJoin()
                 .join(postIngredient.ingredient, ingredient).fetchJoin()
 
-                .leftJoin(post.nutrients, postNutrient).fetchJoin()
+                .join(post.nutrients, postNutrient).fetchJoin()
                 .join(postNutrient.nutrient, nutrient).fetchJoin()
 
-                .leftJoin(post.reviews, review).fetchJoin()
-                .leftJoin(post.postImages, postImage).fetchJoin()
+//                .leftJoin(post.reviews, review).fetchJoin()
+                .join(post.postImages, postImage).fetchJoin()
                 .where(
                         eqCursorId(cursorId),
                         findByKeywordOfIngredient(keywords)
@@ -80,8 +82,6 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
 //        }
 //        return new SliceImpl<>(results, PageRequest.of(0,size), hasNext);
     }
-
-
 
 
     private BooleanExpression eqCursorId(Long cursorId) {
@@ -98,18 +98,18 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
         return keywords.stream()
                 .map(keyword -> post.title.containsIgnoreCase(keyword))
                 .reduce(BooleanExpression::or)
-                .orElse(null);
+                .orElse(post.id.isNull());
     }
 
 
     private BooleanExpression findByKeywordOfIngredient(List<String> keywords) { // TODO: 최적화 고려
         if (CollectionUtils.isEmpty(keywords)) {
-            return null;
+            return post.id.isNull();
         }
 
         return post.id.in(
                 select(postIngredient.post.id).from(postIngredient)
-                        .join(ingredient).on(postIngredient.ingredient.eq(ingredient))
+                        .join(postIngredient.ingredient, ingredient)
                         .where(ingredient.name.in(keywords)) // 한 번의 조건 처리
         );
     }

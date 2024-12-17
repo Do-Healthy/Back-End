@@ -1,5 +1,6 @@
 package gangdong.diet.domain.post.dto;
 
+import gangdong.diet.domain.member.dto.MemberResponse;
 import gangdong.diet.domain.post.entity.Post;
 import gangdong.diet.domain.review.dto.ReviewResponse;
 import lombok.Builder;
@@ -24,14 +25,15 @@ public class PostResponse {
     private int reviewCount;
     private int scrapCount;
     private Boolean isScrapped;
-    private static final String IMAGE_URL_PREFIX = "https://ec2아이디";
+    private List<String> tagName;
+    private static final String IMAGE_URL_PREFIX = "http:ec2주소";
 
     @Builder
-    public PostResponse(Post post, Long userId) {
+    public PostResponse(Post post, Boolean isScrapped) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.content = post.getContent();
-        this.mainImageUrl = post.getMainImageUrl() == null ? "" : IMAGE_URL_PREFIX + post.getMainImageUrl();
+        this.mainImageUrl = post.getThumbnailUrl() == null ? "" : IMAGE_URL_PREFIX + post.getThumbnailUrl();
         this.youtubeUrl = post.getYoutubeUrl();
         this.ingredients = post.getIngredients().stream().map(pi -> PostIngredientResponse.builder()
                 .postIngredient(pi).build()).toList();
@@ -47,8 +49,10 @@ public class PostResponse {
                 .orElse(0.0); // 리뷰가 없으면 0.0 반환
         this.reviewCount = post.getReviews().size();
         this.scrapCount = post.getScraps().size();
-        this.isScrapped = post.getScraps().stream()
-                .anyMatch(scrap -> scrap.getMember().getId().equals(null)); // TODO 여기에 현재 로그인된 아이디 넣어야함
+//        this.isScrapped = post.getScraps().stream()
+//                .anyMatch(scrap -> scrap.getMember().getId().equals(null)); // TODO 여기에 현재 로그인된 아이디 넣어야함
+        this.isScrapped = isScrapped;
+        this.tagName = post.getPostTags().stream().map(pt -> pt.getTag().getName()).toList();
     }
 
 }

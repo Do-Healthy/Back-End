@@ -12,4 +12,6 @@ public interface PostQRepository {
 
     List<Post> findByIngredient(Long cursorId, List<String> keywords, int size);
 
+//    List<Post> findAllPosts(Long cursorId, int size);
+
 }

@@ -1,6 +1,5 @@
 package gangdong.diet.domain.post.entity;
 
-
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;

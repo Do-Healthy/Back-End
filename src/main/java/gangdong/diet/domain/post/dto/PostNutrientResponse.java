@@ -16,7 +16,7 @@ public class PostNutrientResponse {
     public PostNutrientResponse(PostNutrient postNutrient) {
         this.id = postNutrient.getNutrient().getId();
         this.name = postNutrient.getNutrient().getName();
-        this.amount = postNutrient.getNutrient().getUnit() + postNutrient.getAmount();
+        this.amount = postNutrient.getAmount();
     }
 
 
