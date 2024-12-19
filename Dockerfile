@@ -1,5 +1,5 @@
 # 빌드 스테이지
-FROM maven:3.9 AS build
+FROM gradle:7.6-jdk11 AS build
 WORKDIR /app
 
 # 소스 코드 복사 및 패키지 빌드
