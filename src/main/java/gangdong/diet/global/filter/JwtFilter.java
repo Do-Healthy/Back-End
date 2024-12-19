@@ -38,7 +38,6 @@ public class JwtFilter extends OncePerRequestFilter {
         String accessToken = request.getHeader("access");
 
 
-
         // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {
             filterChain.doFilter(request, response);
@@ -76,6 +75,7 @@ public class JwtFilter extends OncePerRequestFilter {
         MemberDetails customUserDetails = new MemberDetails(saveMemberDTO);
 
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+        log.info(authToken.toString());
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
