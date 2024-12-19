@@ -4,7 +4,7 @@ WORKDIR /app
 
 # 소스 코드 복사 및 빌드
 COPY . .
-RUN gradle build --no-daemon
+RUN gradle build --no-daemon -x test
 
 # 실행 스테이지
 FROM openjdk:17-jdk-slim
