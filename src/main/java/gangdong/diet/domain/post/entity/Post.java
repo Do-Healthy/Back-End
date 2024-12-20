@@ -29,6 +29,15 @@ public class Post extends BaseEntity {
     private String content;
 
     @Setter
+    private String cookingTime; // 이 친구들 string으로 둬도 좋은지.
+
+    @Setter
+    private Integer calories;
+
+    @Setter
+    private Integer servings;
+
+    @Setter
     private String thumbnailUrl;
 
     // 작성자
@@ -40,40 +49,45 @@ public class Post extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<PostIngredient> ingredients = new HashSet<>();
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true) // 카스케이드 고민
+    private List<PostIngredient> ingredients = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<PostNutrient> nutrients = new HashSet<>();
+    private List<PostNutrient> nutrients = new ArrayList<>();
 
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 10)
     private List<Review> reviews = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "post")
+    @BatchSize(size = 10)
     private List<Scrap> scraps = new ArrayList<>(); // TODO : 트랜잭션 동시성 알아보기
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<PostTag> postTags = new HashSet<>();
+    private List<PostTag> postTags = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<PostImage> postImages = new HashSet<>();
+    private List<PostImage> postImages = new ArrayList<>();
 
     @Builder
-    private Post(String title, String content, String thumbnailUrl, String youtubeUrl, Member member, Set<PostIngredient> postIngredients, Set<PostNutrient> postNutrients, Set<PostImage> postImages, Boolean isApproved, Set<PostTag> postTags) {
+    private Post(Long id, String title, String content, String cookingTime, Integer calories, Integer servings, String thumbnailUrl, String youtubeUrl, Member member, List<PostIngredient> postIngredients, List<PostNutrient> postNutrients, List<PostImage> postImages, Boolean isApproved, List<PostTag> postTags) {
+        this.id = id;
         this.title = title;
         this.content = content;
+        this.cookingTime = cookingTime;
+        this.calories = calories;
+        this.servings = servings;
         this.thumbnailUrl = thumbnailUrl;
         this.youtubeUrl = youtubeUrl;
         this.member = member;
-        this.ingredients = postIngredients != null ? postIngredients : new HashSet<>();
-        this.nutrients = postNutrients != null ? postNutrients : new HashSet<>();
-        this.postImages = postImages != null ? postImages : new HashSet<>();
+        this.ingredients = postIngredients != null ? postIngredients : new ArrayList<>();
+        this.nutrients = postNutrients != null ? postNutrients : new ArrayList<>();
+        this.postImages = postImages != null ? postImages : new ArrayList<>();
         this.isApproved = isApproved;
-        this.postTags = postTags != null ? postTags : new HashSet<>();
+        this.postTags = postTags != null ? postTags : new ArrayList<>();
     }
 
     @Override

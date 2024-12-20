@@ -5,14 +5,12 @@ import gangdong.diet.domain.nutrient.dto.NutrientRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 
 @Schema(title = "게시물 등록 요청 API")
 @Getter
@@ -27,6 +25,18 @@ public class PostRequest {
     @Size(max = 500, message = "500자를 넘길 수 없습니다.")
     private String content;
 
+    @Schema(description = "조리시간", example = "1시간30분")
+    @NotBlank
+    private String cookingTime;
+
+    @Schema(description = "칼로리", example = "450")
+    @NotNull
+    private Integer calories;
+
+    @Schema(description = "몇인분", example = "3")
+    @NotNull
+    private Integer servings;
+
 //    @Schema(description = "썸네일", example = "asdfv.jpg")
 //    private MultipartFile thumbnail;
 
@@ -39,6 +49,8 @@ public class PostRequest {
 
     @Schema(description = "성분", example = "재료와 같은 형식인데 여긴 null값도 가능입니다.")
     private List<NutrientRequest> nutrients;
+
+    private List<String> descriptions;
 
     @Schema(description = "태그", example = "저염식, 고단백, etc")
     private String tags;

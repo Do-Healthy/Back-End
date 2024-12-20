@@ -55,6 +55,7 @@ public class ReviewServiceImpl implements ReviewService{
 
         if (member.getId() == review.getMember().getId()) {
             review.setContent(reviewRequest.getContent());
+            review.setRating(reviewRequest.getRating());
         }
         else {
             throw new ApiException(ErrorCode.BAD_REQUEST);
