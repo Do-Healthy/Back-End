@@ -33,37 +33,55 @@ public class S3ImageService {
     private final AmazonS3 amazonS3;
 
 
-    // 단일 파일 업로드
-    public String uploadFile(MultipartFile multipartFile, String folderName) {
-        return uploadFile(List.of(multipartFile), folderName).get(0);
-    }
-//    String s3name = folderName+"/"+uuid+"_"+originalFilename;
-    // 여러개의 파일 업로드
-    public List<String> uploadFile(List<MultipartFile> multipartFile, String folderName) {
-        List<String> fileNameList = new ArrayList<>();
+//    // 단일 파일 업로드
+//    public String uploadFile(MultipartFile multipartFile, String folderName) {
+//        return uploadFile(List.of(multipartFile), folderName).get(0);
+//    }
+////    String s3name = folderName+"/"+uuid+"_"+originalFilename;
+//    // 여러개의 파일 업로드
+//    public List<String> uploadFile(List<MultipartFile> multipartFile, String folderName) {
+//        List<String> fileNameList = new ArrayList<>();
+//
+//        multipartFile.forEach(file -> {
+//            String fileName = createFileName(file.getOriginalFilename()); // TODO : 파일 이름에 폴더도 추가해야함. 그리고 원본 이름도 저장 할 지
+//            fileName = folderName + fileName; // Todo 두 개의 폴더를 타는지 확인.
+//            ObjectMetadata objectMetadata = new ObjectMetadata();
+//            objectMetadata.setContentLength(file.getSize());
+//            objectMetadata.setContentType(file.getContentType());
+//
+//            try(InputStream inputStream = file.getInputStream()) {
+////                s3Client.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
+////                        .withCannedAcl(CannedAccessControlList.PublicRead));
+//                amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata));
+//            } catch(IOException e) {
+//                throw new ApiException(ErrorCode.FILE_UPLOAD_ERROR);
+//            }
+//
+//            fileNameList.add(fileName);
+//        });
+//
+//        return fileNameList;
+//    }
 
-        multipartFile.forEach(file -> {
-            String fileName = createFileName(file.getOriginalFilename()); // TODO : 파일 이름에 폴더도 추가해야함. 그리고 원본 이름도 저장 할 지
-            fileName = folderName + fileName; // Todo 두 개의 폴더를 타는지 확인.
-            ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentLength(file.getSize());
-            objectMetadata.setContentType(file.getContentType());
+    public String uploadFile(MultipartFile file, String folderName) {
+        // 1. 파일 이름 생성
+        String fileName = createFileName(file.getOriginalFilename()); // TODO : 파일 이름에 폴더도 추가해야 함. 그리고 원본 이름도 저장할지
+        fileName = folderName + fileName; // TODO : 두 개의 폴더를 타는지 확인.
 
-            List<String> uploadedFiles = new ArrayList<>();
-            try(InputStream inputStream = file.getInputStream()) {
-//                s3Client.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata)
-//                        .withCannedAcl(CannedAccessControlList.PublicRead));
-                amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata));
-                uploadedFiles.add(fileName); // 업로드된 파일 추적
-            } catch(IOException e) {
-                cleanupUploadedFiles(uploadedFiles);
-                throw new ApiException(ErrorCode.FILE_UPLOAD_ERROR);
-            }
+        // 2. S3 업로드에 필요한 메타데이터 설정
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentLength(file.getSize());
+        objectMetadata.setContentType(file.getContentType());
 
-            fileNameList.add(fileName);
-        });
+        try (InputStream inputStream = file.getInputStream()) {
+            // 3. S3에 파일 업로드
+            amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata));
+        } catch (IOException e) {
+            throw new ApiException(ErrorCode.FILE_UPLOAD_ERROR);
+        }
 
-        return fileNameList;
+        // 4. 업로드한 파일 이름 반환
+        return fileName;
     }
 
     // 파일 삭제
@@ -101,7 +119,7 @@ public class S3ImageService {
     }
 
     // S3에서 업로드된 파일 삭제
-    private void cleanupUploadedFiles(List<String> fileNames) {
+    public void cleanupUploadedFiles(List<String> fileNames) {
         fileNames.forEach(fileName -> {
             try {
                 amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));

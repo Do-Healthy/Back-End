@@ -29,8 +29,9 @@ public class ReviewController {
     }
 
     @PutMapping("/reviews/{reviewId}")
-    public ResponseEntity updateReview(@PathVariable Long reviewId, @Validated @RequestBody ReviewRequest request
-            , @AuthenticationPrincipal MemberDetails memberDetails) {
+    public ResponseEntity updateReview(@PathVariable Long reviewId,
+                                       @Validated @RequestBody ReviewRequest request,
+                                       @AuthenticationPrincipal MemberDetails memberDetails) {
 
         reviewService.updateReview(reviewId, request, memberDetails);
 

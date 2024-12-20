@@ -20,6 +20,7 @@ public class Review extends BaseTimeEntity {
     @Setter
     private String content;
 
+    @Setter
     private int rating;
 
     @ManyToOne

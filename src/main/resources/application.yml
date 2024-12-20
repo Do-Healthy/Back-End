@@ -7,7 +7,7 @@ spring:
         format_sql: true
         use_sql_comments: true
         show_sql: true
-    #        default_batch_fetch_size: 100
+    #        default_batch_fetch_size: 100 // 이거와 태그의 관계 공부.
     open-in-view: true
 
 cloud:
