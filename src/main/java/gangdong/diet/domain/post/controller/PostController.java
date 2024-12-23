@@ -30,5 +30,5 @@ public class PostController {
     public ResponseEntity<PostResponse> getOnePostById(@PathVariable Long id) {
         return ResponseEntity.ok().body(postService.getOnePost(id));
     }
-
+    
 }

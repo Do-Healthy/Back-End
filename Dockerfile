@@ -1,16 +1,11 @@
-# Build Stage
-FROM gradle:7.6-jdk17 AS build
-WORKDIR /app
-
-# Copy YML and Source Code
-COPY Back-End-do-healthy/api-module/src/main/resources/application-test.yml /app/src/main/resources/
-COPY . .
-
-RUN gradle build --no-daemon -x test
-
-# Execution Stage
+# 베이스 이미지
 FROM openjdk:17-jdk-slim
-WORKDIR /app
-COPY --from=build /app/build/libs/*.jar app.jar
 
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# Gradle 빌드 결과물 복사
+COPY build/libs/Diet-0.0.1-SNAPSHOT.jar app.jar
+
+# 애플리케이션 실행
 ENTRYPOINT ["java", "-jar", "app.jar"]
