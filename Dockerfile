@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y redis-server
 WORKDIR /app
 
 # Gradle 빌드 결과물 복사 (애플리케이션 JAR 파일)
-COPY build/libs/SearchSpace-0.0.1-SNAPSHOT.jar app.jar
+COPY build/libs/Diet-0.0.1-SNAPSHOT.jar app.jar
+
 
 # 포트 열기 (애플리케이션과 Redis)
 EXPOSE 8080
