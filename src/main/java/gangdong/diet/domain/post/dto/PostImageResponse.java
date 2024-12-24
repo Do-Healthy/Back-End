@@ -10,7 +10,7 @@ public class PostImageResponse {
     private final Long id;
     private final String imageUrl;
     private final String description;
-    private static final String IMAGE_URL_PREFIX = "https://ec2주소";
+    private static final String IMAGE_URL_PREFIX = "http:ec2주소";
 
     @Builder
     public PostImageResponse(PostImage postImage) {

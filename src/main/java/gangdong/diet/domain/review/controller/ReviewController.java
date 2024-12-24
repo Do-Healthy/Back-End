@@ -12,32 +12,38 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "리뷰 API")
 @RequiredArgsConstructor
-@RequestMapping("/review")
+@RequestMapping("/api")
 @RestController
 public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @PostMapping
-    public ResponseEntity addReview(@Validated ReviewRequest request
-            , @AuthenticationPrincipal MemberDetails memberDetails) { // AuthenticationPrincipal
-        reviewService.addReview(request);
+    @PostMapping("/posts/{postId}/reviews")
+    public ResponseEntity addReview(@PathVariable("postId") Long postId,
+                                    @Validated @RequestBody ReviewRequest request,
+                                    @AuthenticationPrincipal MemberDetails memberDetails) { // AuthenticationPrincipal
+
+        reviewService.addReview(postId, request, memberDetails);
 
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity updateReview(@PathVariable Long id, @Validated ReviewRequest request) {
-        reviewService.updateReview(id, request);
+    @PutMapping("/reviews/{reviewId}")
+    public ResponseEntity updateReview(@PathVariable Long reviewId,
+                                       @Validated @RequestBody ReviewRequest request,
+                                       @AuthenticationPrincipal MemberDetails memberDetails) {
+
+        reviewService.updateReview(reviewId, request, memberDetails);
 
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity deleteReview(@PathVariable Long id) {
-        reviewService.deleteReview(id);
+    @DeleteMapping("/reviews/{reviewId}")
+    public ResponseEntity deleteReview(@PathVariable Long reviewId, @AuthenticationPrincipal MemberDetails memberDetails) {
 
-        return ResponseEntity.ok().build();
+        reviewService.deleteReview(reviewId, memberDetails);
+
+        return ResponseEntity.ok().body("삭제가 완료됐습니다.");
     }
 
 }

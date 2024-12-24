@@ -35,14 +35,16 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         // 엑세스 토큰이 있는지 부터 확인
-        String accessToken = request.getHeader("access");
 
+        String accessToken = request.getHeader("Authorization");
 
         // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {
             filterChain.doFilter(request, response);
             return;
         }
+
+        accessToken = accessToken.substring(7);
 
         // 토큰 만료 여부 확인
         try {
@@ -71,7 +73,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String memberEmail = jwtUtil.getMemberEmail(accessToken);
         String role = jwtUtil.getRole(accessToken);
 
-        SaveMemberDTO saveMemberDTO = SaveMemberDTO.builder().memberEmail(memberEmail).role(role).build();
+        SaveMemberDTO saveMemberDTO = SaveMemberDTO.builder().memberEmail(memberEmail).name(memberEmail).role(role).build();//todo 네임에 이메일 바꿔야함
         MemberDetails customUserDetails = new MemberDetails(saveMemberDTO);
 
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());

@@ -3,6 +3,7 @@ package gangdong.diet.domain.ingredient.entity;
 import gangdong.diet.domain.post.entity.PostIngredient;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -20,10 +21,8 @@ public class Ingredient {
     @Column(length = 100)
     private String name;
 
-    @Column(length = 30)
-    private String unit;
-
-    @OneToMany(mappedBy = "ingredient")
-    private List<PostIngredient> posts;
-
+    @Builder
+    public Ingredient(String name) {
+        this.name = name;
+    }
 }

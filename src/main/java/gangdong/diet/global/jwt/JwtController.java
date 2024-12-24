@@ -21,7 +21,7 @@ public class JwtController {
     private final JwtUtil jwtUtil;
     private final TokenService tokenService;
 
-    @PostMapping("/reissue")
+    @PostMapping("/api/member/reissue")
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
 
         //get refresh token
@@ -34,8 +34,6 @@ public class JwtController {
                 refresh = cookie.getValue();
             }
         }
-
-
 
         if (refresh == null) {
             //response status code

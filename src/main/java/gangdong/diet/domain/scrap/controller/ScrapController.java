@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "스크랩 API")
 @RequiredArgsConstructor
-@RequestMapping("/scrap")
+@RequestMapping("/api/scrap")
 @RestController
 public class ScrapController {
 
