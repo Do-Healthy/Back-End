@@ -35,6 +35,7 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         // 엑세스 토큰이 있는지 부터 확인
+
         String accessToken = request.getHeader("Authorization");
 
         // 토큰이 없다면 다음 필터로 넘김
@@ -76,6 +77,7 @@ public class JwtFilter extends OncePerRequestFilter {
         MemberDetails customUserDetails = new MemberDetails(saveMemberDTO);
 
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+        log.info(authToken.toString());
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
