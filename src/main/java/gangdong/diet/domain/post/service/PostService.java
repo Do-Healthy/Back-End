@@ -23,4 +23,8 @@ public interface PostService {
     public PostResponse updatePost(Long id, PostRequest postRequest, MultipartFile thumbnail, List<MultipartFile> postImages, MemberDetails memberDetails);
 
     public void deletePost(Long id, MemberDetails memberDetails);
+
+    public List<PostSearchResponse> findRelatedPosts(Long id);
+
+    public PostResponse getSurveyPost(Long id);
 }

@@ -15,6 +15,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -40,7 +41,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = jwtUtil.createAccessToken(memberEmail, role);
         String refreshToken = jwtUtil.createRefreshToken(memberEmail);
 
-        response.addCookie(createCookie("access", accessToken));
+        response.addCookie(createCookie("Authorization", "Bearer_" + accessToken));
         response.addCookie(createCookie("refresh", refreshToken));
 
         response.sendRedirect("http://localhost:5500/html/main.html");

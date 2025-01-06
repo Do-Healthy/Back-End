@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,7 +27,7 @@ public class JwtController {
 
         //get refresh token
         String refresh = null;
-        String access = request.getHeader("access");
+        String access = request.getHeader("Authorization");
 
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies) {
@@ -80,6 +81,23 @@ public class JwtController {
         //response
         response.setHeader("access", newAccess);
         response.addCookie(createCookie("refresh", newRefresh));
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/api/member/logout")
+    public ResponseEntity<?> reissue(HttpServletRequest request) {
+        String refresh = null;
+
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals("refresh")) {
+                refresh = cookie.getValue();
+            }
+        }
+        String memberEmail = jwtUtil.getMemberEmail(refresh);
+
+        tokenService.deleteRefreshToken(memberEmail);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

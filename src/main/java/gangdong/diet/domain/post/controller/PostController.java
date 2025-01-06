@@ -7,7 +7,6 @@ import gangdong.diet.domain.post.service.PostService;
 import gangdong.diet.global.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
@@ -68,5 +67,20 @@ public class PostController {
         postService.deletePost(id, memberDetails);
         return ResponseEntity.ok().body("삭제가 완료됐습니다.");
     }
+
+    @Operation(summary = "추천 게시물 조회", description = "게시물 id를 통해 관련 추천 리스트를 조회 합니다.")
+    @GetMapping("recommended/{id}")
+    public ResponseEntity<List<PostSearchResponse>> getRecommendedPostsById(@PathVariable Long id) {
+        List<PostSearchResponse> list = postService.findRelatedPosts(id);
+        return ResponseEntity.ok(list);
+    }
+
+    @Operation(summary = "설문조사 결과지로 관련 게시물 조회", description = "멤버의 id를 통해 설문지와 관련 된 게시물을 조회 합니다.")
+    @GetMapping("survey/{memberId}")
+    public ResponseEntity<PostResponse> getSurveyPost(@PathVariable Long memberId) {
+        PostResponse postResponse = postService.getSurveyPost(memberId);
+        return ResponseEntity.ok(postResponse);
+    }
+
 
 }

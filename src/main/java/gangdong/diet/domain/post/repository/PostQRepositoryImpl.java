@@ -10,12 +10,7 @@ import gangdong.diet.domain.post.entity.*;
 import gangdong.diet.domain.review.entity.Review;
 import gangdong.diet.domain.scrap.entity.Scrap;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -172,7 +167,6 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
 
 
 
-
     private BooleanExpression eqCursorId(Long cursorId) {
         return (cursorId == null) ? null : post.id.gt(cursorId);
     }
@@ -202,6 +196,33 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
                         .where(ingredient.name.in(keywords)) // 한 번의 조건 처리
         );
     }
+
+    @Override
+    public List<Post> findAllByIngredient(Ingredient ingredient) {
+        return queryFactory.selectFrom(post)
+                .join(post.ingredients, postIngredient).fetchJoin()
+                .where(postIngredient.ingredient.eq(ingredient))
+                .distinct()
+                .limit(10)
+                .fetch();
+    }
+
+    @Override
+    public Optional<PostResponse> findOneByKeyword(String keyword) {
+        return Optional.ofNullable(queryFactory
+                .select(
+                        Projections.constructor(
+                                PostResponse.class,
+                                post.id, post.title, post.content, post.cookingTime, post.calories, post.servings,
+                                post.thumbnailUrl, post.youtubeUrl, post.isApproved
+                        )
+                )
+                .from(post)
+                .where(post.title.like("%" + keyword.toLowerCase() + "%"))
+                .fetchFirst()
+        );
+    }
+
 
 }
 

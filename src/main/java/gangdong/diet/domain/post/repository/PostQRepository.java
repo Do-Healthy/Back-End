@@ -1,12 +1,11 @@
 package gangdong.diet.domain.post.repository;
 
+import gangdong.diet.domain.ingredient.entity.Ingredient;
 import gangdong.diet.domain.post.dto.PostResponse;
 import gangdong.diet.domain.post.dto.PostSearchResponse;
 import gangdong.diet.domain.post.entity.*;
 import gangdong.diet.domain.review.entity.Review;
 import gangdong.diet.domain.scrap.entity.Scrap;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,4 +32,7 @@ public interface PostQRepository {
 
 //    List<Post> findAllPosts(Long cursorId, int size);
 
+    List<Post> findAllByIngredient(Ingredient ingredient);
+
+    Optional<PostResponse> findOneByKeyword(String keyword);
 }

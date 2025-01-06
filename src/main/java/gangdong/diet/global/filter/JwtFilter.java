@@ -37,6 +37,16 @@ public class JwtFilter extends OncePerRequestFilter {
         // 엑세스 토큰이 있는지 부터 확인
 
         String accessToken = request.getHeader("Authorization");
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("access".equals(cookie.getName())) {
+                    accessToken = cookie.getValue(); // JWT 값을 그대로 가져오기
+                }
+            }
+        }
+
+        log.info(accessToken+"##########$#$#$#$#$#$#$$#$");
 
         // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {
@@ -44,8 +54,9 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        accessToken = accessToken.substring(7);
+        accessToken = accessToken.substring(9);
 
+        log.info(accessToken+"!!!!!!!!!!!!!!!!!!!!!!!!!$#$#$#$#$#$#$$#$");
         // 토큰 만료 여부 확인
         try {
             jwtUtil.isExpired(accessToken);
@@ -58,16 +69,6 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 엑세스 토큰인지 여부 확인
-        String category = jwtUtil.getAccess(accessToken);
-        if (!category.equals("access_token")) {
-            //response body
-            PrintWriter writer = response.getWriter();
-            writer.print("invalid access token");
-            //response status code
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
 
         // memberEmail, role 값을 획득
         String memberEmail = jwtUtil.getMemberEmail(accessToken);
