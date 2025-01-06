@@ -5,9 +5,11 @@ import gangdong.diet.domain.member.repository.MemberRepository;
 import gangdong.diet.domain.survey.dto.SurveyDTO;
 import gangdong.diet.domain.survey.entity.Survey;
 import gangdong.diet.domain.survey.repository.SurveyRepository;
+import gangdong.diet.global.auth.MemberDetails;
 import gangdong.diet.global.exception.ApiException;
 import gangdong.diet.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,9 +24,9 @@ public class SurveyServiceImpl implements SurveyService {
     private final MemberRepository memberRepository;
 
     @Override
-    public void createSurvey(SurveyDTO surveyDTO) {
+    public void createSurvey(SurveyDTO surveyDTO, MemberDetails memberDetails) {
 
-        Member member = memberRepository.findById(surveyDTO.getMemberId()).orElseThrow(() -> new ApiException(ErrorCode.MEMBER_NOT_FOUND));
+        Member member = memberRepository.findByMemberEmail(memberDetails.getUsername()).orElseThrow(() -> new ApiException(ErrorCode.MEMBER_NOT_FOUND));
 
         Map<String, Integer> surveyScore = new HashMap<>();
         surveyScore.put("소화문제",surveyDTO.getDigestive());

@@ -16,5 +16,4 @@ public class SurveyDTO {
     //면역 및 감염 문제
     private Integer immunity;
 
-    private Long memberId;
 }

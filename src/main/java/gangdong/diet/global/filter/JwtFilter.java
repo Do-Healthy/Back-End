@@ -40,13 +40,13 @@ public class JwtFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("access".equals(cookie.getName())) {
+                if ("Authorization".equals(cookie.getName())) {
                     accessToken = cookie.getValue(); // JWT 값을 그대로 가져오기
                 }
             }
         }
 
-        log.info(accessToken+"##########$#$#$#$#$#$#$$#$");
+        log.info(accessToken+"    ##########$#$#$#$#$#$#$$#$");
 
         // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {
@@ -56,7 +56,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         accessToken = accessToken.substring(9);
 
-        log.info(accessToken+"!!!!!!!!!!!!!!!!!!!!!!!!!$#$#$#$#$#$#$$#$");
+        log.info(accessToken+"   !!!!!!!!!!!!!!!!!!!!!!!!!$#$#$#$#$#$#$$#$");
         // 토큰 만료 여부 확인
         try {
             jwtUtil.isExpired(accessToken);

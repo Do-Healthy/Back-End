@@ -422,8 +422,12 @@ public class PostServiceImpl implements PostService{
 
     // 설문지 토대로 밀프랩 추천
     @Override
-    public PostResponse getSurveyPost(Long memberId) {
-        Survey survey = surveyRepository.findByMemberId(memberId).orElseThrow(() -> new ApiException(ErrorCode.SURVEY_NOT_FOUND));
+    public PostResponse getSurveyPost(MemberDetails memberDetails) {
+
+        Member member = memberRepository.findByMemberEmail(memberDetails.getUsername())
+                .orElseThrow(() -> new ApiException(ErrorCode.MEMBER_NOT_FOUND));
+
+        Survey survey = surveyRepository.findByMemberId(member.getId()).orElseThrow(() -> new ApiException(ErrorCode.SURVEY_NOT_FOUND));
         List<String> totalList = survey.getTotalList();
         String surveyResult ="";
         for(String s : totalList){
