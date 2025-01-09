@@ -30,6 +30,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,6 +41,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -55,6 +58,7 @@ public class PostServiceImpl implements PostService{
     private final NutrientService nutrientService;
     private final ScrapRepository scrapRepository;
     private final TagService tagService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional(readOnly = true)
     @Override
@@ -148,7 +152,21 @@ public class PostServiceImpl implements PostService{
     @Transactional(readOnly = true)
     @Override
     public PostResponse getOnePost(Long postId) {
+        String redisKey = "post:view:" + postId;
+
         PostResponse postResponse = postRepository.getOnePost(postId).orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
+
+        Integer redisViewCount = (Integer) redisTemplate.opsForValue().get(redisKey);
+
+        if (redisViewCount == null) {
+            redisViewCount = postResponse.getViewCount();
+            redisTemplate.opsForValue().set(redisKey, redisViewCount, 60, TimeUnit.MINUTES);
+            // TODO 타임아웃 고민, 이게 스케줄러와 관계가 있기에 (없애야할듯)
+        }
+
+        // Redis 조회수 증가
+        Long incrementedViewCount = redisTemplate.opsForValue().increment(redisKey);
+        postResponse.setViewCount(incrementedViewCount.intValue());
 
         List<PostIngredient> ingredients = postRepository.getIngredients(postId);
         List<PostNutrient> nutrients = postRepository.getNutrients(postId);
@@ -390,5 +408,24 @@ public class PostServiceImpl implements PostService{
         return scrappedPostIds;
     }
 
+
+    @Scheduled(fixedRate = 3600000) // 매 1시간마다 실행
+    public void syncViewCounts() {
+        Set<String> keys = redisTemplate.keys("post:view:*");
+        if (keys != null) {
+            for (String key : keys) {
+                Long postId = Long.valueOf(key.split(":")[2]);
+                Integer viewCount = Integer.parseInt(redisTemplate.opsForValue().get(key).toString());
+
+                // 데이터베이스에 반영
+                Post post = postRepository.findById(postId).orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
+                post.setViewCount(viewCount); // 엔티티에 viewCount 필드 추가 필요
+                postRepository.save(post);
+
+                // Redis 데이터 초기화
+                redisTemplate.delete(key);
+            }
+        }
+    }
 
 }

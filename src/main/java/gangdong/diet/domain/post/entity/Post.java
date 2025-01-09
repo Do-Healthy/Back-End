@@ -44,6 +44,10 @@ public class Post extends BaseEntity {
     @Setter
     private String youtubeUrl;
 
+    @Setter
+    @Column(nullable = false)
+    private Integer viewCount = 0;
+
     private Boolean isApproved;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -62,7 +66,7 @@ public class Post extends BaseEntity {
     private List<Review> reviews = new ArrayList<>();
 
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 10)
     private List<Scrap> scraps = new ArrayList<>(); // TODO : 트랜잭션 동시성 알아보기
 
@@ -73,7 +77,7 @@ public class Post extends BaseEntity {
     private List<PostImage> postImages = new ArrayList<>();
 
     @Builder
-    private Post(Long id, String title, String content, String cookingTime, Integer calories, Integer servings, String thumbnailUrl, String youtubeUrl, Member member, List<PostIngredient> postIngredients, List<PostNutrient> postNutrients, List<PostImage> postImages, Boolean isApproved, List<PostTag> postTags) {
+    private Post(Long id, String title, String content, String cookingTime, Integer calories, Integer servings, String thumbnailUrl, String youtubeUrl, Integer viewCount, Member member, List<PostIngredient> postIngredients, List<PostNutrient> postNutrients, List<PostImage> postImages, Boolean isApproved, List<PostTag> postTags) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -82,6 +86,7 @@ public class Post extends BaseEntity {
         this.servings = servings;
         this.thumbnailUrl = thumbnailUrl;
         this.youtubeUrl = youtubeUrl;
+        this.viewCount = viewCount != null ? viewCount : 0;
         this.member = member;
         this.ingredients = postIngredients != null ? postIngredients : new ArrayList<>();
         this.nutrients = postNutrients != null ? postNutrients : new ArrayList<>();

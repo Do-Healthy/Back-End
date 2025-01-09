@@ -28,7 +28,7 @@ public class Member extends BaseTimeEntity {
     private String provider;
     private String providerId;
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Scrap> scraps = new ArrayList<>();
 
     @Builder

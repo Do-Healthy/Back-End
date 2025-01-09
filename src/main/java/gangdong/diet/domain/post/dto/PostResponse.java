@@ -22,6 +22,7 @@ public class PostResponse {
     private String calories;
     private String servings;
     private String youtubeUrl;
+    @Setter private Integer viewCount;
     private List<PostIngredientResponse> ingredients = new ArrayList<>();
     private List<PostNutrientResponse> nutrients = new ArrayList<>();
     private List<PostImageResponse> postImages = new ArrayList<>();
@@ -46,6 +47,7 @@ public class PostResponse {
         this.calories = post.getCalories() + "kcal";
         this.servings = post.getServings() + "인분";
         this.youtubeUrl = post.getYoutubeUrl();
+        this.viewCount = post.getViewCount();
         this.ingredients = post.getIngredients().stream().map(pi -> PostIngredientResponse.builder()
                 .postIngredient(pi).build()).toList();
         this.nutrients = post.getNutrients().stream().map(pn -> PostNutrientResponse.builder()
@@ -66,7 +68,7 @@ public class PostResponse {
         this.tagName = post.getPostTags().stream().map(pt -> pt.getTag().getName()).toList();
     }
 
-    public PostResponse(Long id, String title, String content, String cookingTime, Integer calories, Integer servings, String thumbnailUrl, String youtubeUrl, Boolean isApproved) {
+    public PostResponse(Long id, String title, String content, String cookingTime, Integer calories, Integer servings, String thumbnailUrl, String youtubeUrl, Integer viewCount, Boolean isApproved) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -75,6 +77,7 @@ public class PostResponse {
         this.servings = servings.toString() + "인분";
         this.thumbnailUrl = thumbnailUrl;
         this.youtubeUrl = youtubeUrl;
+        this.viewCount = viewCount;
     }
 
     public void setScrapCount(int scrapCount) {
