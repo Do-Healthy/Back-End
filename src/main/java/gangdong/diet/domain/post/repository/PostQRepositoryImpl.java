@@ -109,7 +109,7 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
                                 Projections.constructor(
                                         PostResponse.class,
                                         post.id, post.title, post.content, post.cookingTime, post.calories, post.servings,
-                                        post.thumbnailUrl, post.youtubeUrl, post.isApproved
+                                        post.thumbnailUrl, post.youtubeUrl, post.viewCount, post.isApproved
                                 )
                         )
                         .from(post)
