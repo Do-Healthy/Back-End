@@ -3,29 +3,24 @@ package gangdong.diet.domain.post.repository;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import gangdong.diet.domain.ingredient.entity.Ingredient;
+import gangdong.diet.domain.cookingstep.entity.CookingStep;
 import gangdong.diet.domain.post.dto.PostResponse;
 import gangdong.diet.domain.post.dto.PostSearchResponse;
 import gangdong.diet.domain.post.entity.*;
 import gangdong.diet.domain.review.entity.Review;
 import gangdong.diet.domain.scrap.entity.Scrap;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
 
 import static com.querydsl.jpa.JPAExpressions.select;
 
+import static gangdong.diet.domain.cookingstep.entity.QCookingStep.cookingStep;
 import static gangdong.diet.domain.ingredient.entity.QIngredient.ingredient;
 import static gangdong.diet.domain.nutrient.entity.QNutrient.nutrient;
 import static gangdong.diet.domain.post.entity.QPost.post;
-import static gangdong.diet.domain.post.entity.QPostImage.postImage;
 import static gangdong.diet.domain.post.entity.QPostIngredient.postIngredient;
 import static gangdong.diet.domain.post.entity.QPostNutrient.postNutrient;
 import static gangdong.diet.domain.post.entity.QPostTag.postTag;
@@ -51,7 +46,7 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
                         containsRecipeNameKeywords(keywords)  // 키워드 조건 추가
                 )
                 .limit(size + 1)  // 다음 페이지 유무 확인을 위해 한 개 더 요청
-                .fetch();
+                .fetch(); // 결과가 없으면 빈 리스트 반환함
 
         // 다음 페이지 여부 확인 및 Slice 반환
 //        boolean hasNext = results.size() > size;
@@ -108,8 +103,8 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
                         .select(
                                 Projections.constructor(
                                         PostResponse.class,
-                                        post.id, post.title, post.content, post.cookingTime, post.calories, post.servings,
-                                        post.thumbnailUrl, post.youtubeUrl, post.viewCount, post.isApproved
+                                        post.id, post.title, post.description, post.thumbnailUrl, post.cookingTime, post.calories,
+                                        post.servings, post.youtubeUrl, post.viewCount, post.isApproved
                                 )
                         )
                         .from(post)
@@ -147,9 +142,9 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
     }
 
     @Override
-    public List<PostImage> getPostImages(Long postId) {
-        return queryFactory.selectFrom(postImage)
-                .join(postImage.post, post)
+    public List<CookingStep> getCookingSetps(Long postId) {
+        return queryFactory.selectFrom(cookingStep)
+                .join(cookingStep.post, post)
                 .where(post.id.eq(postId))
                 .fetch();
     }
@@ -180,7 +175,7 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
 
     private BooleanExpression containsRecipeNameKeywords(List<String> keywords) {
         if (CollectionUtils.isEmpty(keywords)) {
-            return null;
+            return null; // 현재 상황에서 keywords가 빈 값일 경우 이걸 쓰면 전체 반환됨. querydsl의 BooleanExpression이 null일 경우 조건에서 제외되고 다른 조건만 적용.
         }
 
         // Querydsl의 anyOf()를 활용하여 OR 조건 생성

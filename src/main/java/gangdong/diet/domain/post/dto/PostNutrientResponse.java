@@ -19,5 +19,6 @@ public class PostNutrientResponse {
         this.amount = postNutrient.getAmount();
     }
 
-
+    public PostNutrientResponse() {
+    }
 }

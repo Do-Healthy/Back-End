@@ -4,7 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import gangdong.diet.domain.post.repository.PostImageRepository;
+import gangdong.diet.domain.cookingstep.repository.CookingStepRepository;
 import gangdong.diet.global.exception.ApiException;
 import gangdong.diet.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -25,7 +24,7 @@ import java.util.UUID;
 @Service
 public class S3ImageService {
 
-    private final PostImageRepository postImageRepository;
+    private final CookingStepRepository cookingStepRepository;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -64,23 +63,22 @@ public class S3ImageService {
 //    }
 
     public String uploadFile(MultipartFile file, String folderName) {
-        // 1. 파일 이름 생성
+        // 파일 이름 생성
         String fileName = createFileName(file.getOriginalFilename()); // TODO : 파일 이름에 폴더도 추가해야 함. 그리고 원본 이름도 저장할지
         fileName = folderName + fileName; // TODO : 두 개의 폴더를 타는지 확인.
 
-        // 2. S3 업로드에 필요한 메타데이터 설정
+        // S3 업로드에 필요한 메타데이터 설정
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(file.getSize());
         objectMetadata.setContentType(file.getContentType());
 
         try (InputStream inputStream = file.getInputStream()) {
-            // 3. S3에 파일 업로드
+            // S3에 파일 업로드
             amazonS3.putObject(new PutObjectRequest(bucket, fileName, inputStream, objectMetadata));
         } catch (IOException e) {
             throw new ApiException(ErrorCode.FILE_UPLOAD_ERROR);
         }
 
-        // 4. 업로드한 파일 이름 반환
         return fileName;
     }
 

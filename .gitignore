@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+
+/src/main/java/gangdong/diet/domain/post/service/TestService.java
