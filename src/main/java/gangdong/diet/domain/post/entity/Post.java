@@ -2,7 +2,7 @@ package gangdong.diet.domain.post.entity;
 
 
 import gangdong.diet.domain.BaseEntity;
-import gangdong.diet.domain.BaseTimeEntity;
+import gangdong.diet.domain.cookingstep.entity.CookingStep;
 import gangdong.diet.domain.member.entity.Member;
 import gangdong.diet.domain.review.entity.Review;
 import gangdong.diet.domain.scrap.entity.Scrap;
@@ -26,16 +26,16 @@ public class Post extends BaseEntity {
     private String title;
 
     @Setter
-    private String content;
+    private String description;
 
     @Setter
     private String cookingTime; // 이 친구들 string으로 둬도 좋은지.
 
     @Setter
-    private Integer calories;
+    private String calories;
 
     @Setter
-    private Integer servings;
+    private String servings;
 
     @Setter
     private String thumbnailUrl;
@@ -48,6 +48,7 @@ public class Post extends BaseEntity {
     @Column(nullable = false)
     private Integer viewCount = 0;
 
+    @Setter
     private Boolean isApproved;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -74,13 +75,13 @@ public class Post extends BaseEntity {
     private List<PostTag> postTags = new ArrayList<>();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PostImage> postImages = new ArrayList<>();
+    private List<CookingStep> cookingSteps = new ArrayList<>();
 
     @Builder
-    private Post(Long id, String title, String content, String cookingTime, Integer calories, Integer servings, String thumbnailUrl, String youtubeUrl, Integer viewCount, Member member, List<PostIngredient> postIngredients, List<PostNutrient> postNutrients, List<PostImage> postImages, Boolean isApproved, List<PostTag> postTags) {
+    private Post(Long id, String title, String description, String cookingTime, String calories, String servings, String thumbnailUrl, String youtubeUrl, Integer viewCount, Member member, List<PostIngredient> postIngredients, List<PostNutrient> postNutrients, List<CookingStep> cookingSteps, Boolean isApproved, List<PostTag> postTags) {
         this.id = id;
         this.title = title;
-        this.content = content;
+        this.description = description;
         this.cookingTime = cookingTime;
         this.calories = calories;
         this.servings = servings;
@@ -90,7 +91,7 @@ public class Post extends BaseEntity {
         this.member = member;
         this.ingredients = postIngredients != null ? postIngredients : new ArrayList<>();
         this.nutrients = postNutrients != null ? postNutrients : new ArrayList<>();
-        this.postImages = postImages != null ? postImages : new ArrayList<>();
+        this.cookingSteps = cookingSteps != null ? cookingSteps : new ArrayList<>();
         this.isApproved = isApproved;
         this.postTags = postTags != null ? postTags : new ArrayList<>();
     }

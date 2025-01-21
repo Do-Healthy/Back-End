@@ -21,6 +21,7 @@ public class IngredientServiceImpl implements IngredientService{
     @Transactional
     @Override
     public void registerIngredient(List<IngredientRequest> requests, Post post) {
+        post.getIngredients().clear();
         requests.forEach(ingredientRequest -> {
             Ingredient ingredient = ingredientRepository.findByName(ingredientRequest.getName())
                     .orElseGet(() -> ingredientRepository.save(
