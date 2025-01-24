@@ -26,5 +26,7 @@ public interface PostService {
 
     public List<PostSearchResponse> findRelatedPosts(Long id);
 
+    public List<PostResponse> getRecommendPosts();
+
     public PostResponse getSurveyPost(MemberDetails memberDetails);
 }

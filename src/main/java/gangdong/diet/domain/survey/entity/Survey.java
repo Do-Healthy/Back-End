@@ -4,13 +4,17 @@ import gangdong.diet.domain.BaseEntity;
 import gangdong.diet.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "survey")
+@Data
+@NoArgsConstructor
 public class Survey extends BaseEntity {
 
     @Id
@@ -35,6 +39,7 @@ public class Survey extends BaseEntity {
     private List<String> totalList = new ArrayList<>();
 
     @OneToOne
+    @JoinColumn(name = "member_id", unique = true)
     private Member member;
 
 

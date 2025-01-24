@@ -54,7 +54,7 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        accessToken = accessToken.substring(9);
+        accessToken = accessToken.substring(7);
 
         log.info(accessToken+"   !!!!!!!!!!!!!!!!!!!!!!!!!$#$#$#$#$#$#$$#$");
         // 토큰 만료 여부 확인

@@ -440,6 +440,23 @@ public class PostServiceImpl implements PostService{
         return postResponse;
     }
 
+    @Override
+    public List<PostResponse> getRecommendPosts() {
+        List<Post> posts = postRepository.findRecommendPosts();
+        List<PostResponse> postResponseList = new ArrayList<>();
+//        for (Post post : posts) {
+//            postSearchResponseList.add(new PostSearchResponse(
+//                    post.getId(),
+//                    post.getTitle(),
+//                    post.getThumbnailUrl(),
+//                    post.getCookingTime(),
+//                    post.getCalories(),
+//                    post.getServings()
+//            ));
+//        }
+        return null;
+    }
+
     // 조건 정의
     public static Map<String, String> defineDiets() {
         Map<String, String> dietMap = new HashMap<>();

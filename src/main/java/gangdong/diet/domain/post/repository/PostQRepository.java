@@ -34,5 +34,7 @@ public interface PostQRepository {
 
     List<Post> findAllByIngredient(Ingredient ingredient);
 
+    List<Post> findRecommendPosts();
+
     Optional<PostResponse> findOneByKeyword(String keyword);
 }

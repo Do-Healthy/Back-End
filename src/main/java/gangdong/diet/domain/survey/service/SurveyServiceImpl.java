@@ -42,15 +42,17 @@ public class SurveyServiceImpl implements SurveyService {
             }
         }
 
-        Survey survey = Survey.builder()
-                .digestive(surveyDTO.getDigestive())
-                .weightEnergy(surveyDTO.getWeightEnergy())
-                .skinHair(surveyDTO.getSkinHair())
-                .cardioBp(surveyDTO.getCardioBp())
-                .immunity(surveyDTO.getImmunity())
-                .totalList(resultTypes)
-                .member(member)
-                .build();
+        Survey survey = surveyRepository.findByMember(member)
+                .orElse(Survey.builder()
+                        .member(member)
+                        .build());
+
+        survey.setDigestive(surveyDTO.getDigestive());
+        survey.setWeightEnergy(surveyDTO.getWeightEnergy());
+        survey.setSkinHair(surveyDTO.getSkinHair());
+        survey.setCardioBp(surveyDTO.getCardioBp());
+        survey.setImmunity(surveyDTO.getImmunity());
+        survey.setTotalList(resultTypes);
 
         surveyRepository.save(survey);
     }
