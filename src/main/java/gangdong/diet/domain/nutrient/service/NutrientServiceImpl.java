@@ -20,6 +20,7 @@ public class NutrientServiceImpl implements NutrientService {
     @Transactional
     @Override
     public void registerNutrient(List<NutrientRequest> requests, Post post) {
+        post.getNutrients().clear();
         requests.forEach(nutrientRequest -> {
             Nutrient nutrient = nutrientRepository.findByName(nutrientRequest.getName())
                     .orElseGet(() -> nutrientRepository.save(

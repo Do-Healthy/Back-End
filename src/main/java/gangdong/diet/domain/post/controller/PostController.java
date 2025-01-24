@@ -20,7 +20,7 @@ import java.util.List;
 
 @Tag(name = "게시물 API")
 @RequiredArgsConstructor
-@RequestMapping("/api/posts")
+@RequestMapping("/api/recipes")
 @RestController
 public class PostController {
 
@@ -43,10 +43,8 @@ public class PostController {
     @Operation(summary = "게시물 저장")
     @PostMapping
     public ResponseEntity<String> createPost(@RequestPart("postRequest") @Validated PostRequest postRequest,
-                                             @RequestPart("thumbnail") MultipartFile thumbnail,
-                                             @RequestPart(value = "postImages", required = false) List<MultipartFile> postImages,
                                              @AuthenticationPrincipal MemberDetails memberDetails) {
-        postService.savePost(postRequest, thumbnail, postImages, memberDetails);
+        postService.savePost(postRequest, memberDetails);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("게시물 저장을 완료했습니다.");
     }
@@ -55,11 +53,11 @@ public class PostController {
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> updatePost(@PathVariable Long id,
                                                    @RequestPart("postRequest") @Validated PostRequest postRequest,
-                                                   @RequestPart("thumbnail") MultipartFile thumbnail,
-                                                   @RequestPart(value = "postImages", required = false) List<MultipartFile> postImages,
+//                                                   @RequestPart("thumbnail") MultipartFile thumbnail,
+//                                                   @RequestPart(value = "postImages", required = false) List<MultipartFile> postImages,
                                                    @AuthenticationPrincipal MemberDetails memberDetails) {
 
-        return ResponseEntity.ok().body(postService.updatePost(id, postRequest,thumbnail, postImages, memberDetails));
+        return ResponseEntity.ok().body(postService.updatePost(id, postRequest, memberDetails));
     }
 
     @DeleteMapping("/{id}")

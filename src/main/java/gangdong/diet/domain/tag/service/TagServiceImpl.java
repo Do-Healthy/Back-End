@@ -19,7 +19,7 @@ public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
 
-    @Transactional
+
     @Override
     public void registerTags(String tags, Post post) {
 
@@ -27,6 +27,7 @@ public class TagServiceImpl implements TagService {
         Set<String> finalTagNames = Arrays.stream(newTags.split(","))
                 .collect(Collectors.toSet()); // 중복 제거
 
+        post.getPostTags().clear();
         finalTagNames.forEach(name -> {
             Tag tag = tagRepository.findByName(name)
                     .orElseGet(() -> tagRepository.save(Tag.builder().name(name).build()));

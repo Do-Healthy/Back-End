@@ -19,4 +19,6 @@ public class PostIngredientResponse {
         this.amount = postIngredient.getAmount();
     }
 
+    public PostIngredientResponse() {
+    }
 }

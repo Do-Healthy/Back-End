@@ -1,6 +1,6 @@
 package gangdong.diet.domain.post.repository;
 
-import gangdong.diet.domain.ingredient.entity.Ingredient;
+import gangdong.diet.domain.cookingstep.entity.CookingStep;
 import gangdong.diet.domain.post.dto.PostResponse;
 import gangdong.diet.domain.post.dto.PostSearchResponse;
 import gangdong.diet.domain.post.entity.*;
@@ -24,7 +24,7 @@ public interface PostQRepository {
 
     List<PostTag> getPostTags(Long postId);
 
-    List<PostImage> getPostImages(Long postId);
+    List<CookingStep> getCookingSetps(Long postId);
 
     List<Review> getReviews(Long postId);
 
@@ -32,9 +32,4 @@ public interface PostQRepository {
 
 //    List<Post> findAllPosts(Long cursorId, int size);
 
-    List<Post> findAllByIngredient(Ingredient ingredient);
-
-    List<Post> findRecommendPosts();
-
-    Optional<PostResponse> findOneByKeyword(String keyword);
 }

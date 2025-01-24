@@ -1,5 +1,6 @@
 package gangdong.diet.domain.post.dto;
 
+import gangdong.diet.domain.cookingstep.dto.CookingStepResponse;
 import gangdong.diet.domain.post.entity.Post;
 import gangdong.diet.domain.review.dto.ReviewResponse;
 import gangdong.diet.domain.review.entity.Review;
@@ -15,16 +16,17 @@ public class PostResponse {
 
     private Long id;
     private String title;
-    private String content;
+    private String description;
     private String thumbnailUrl;
     private List<String> tagName = new ArrayList<>();
     private String cookingTime;
     private String calories;
     private String servings;
     private String youtubeUrl;
+    @Setter private Integer viewCount;
     private List<PostIngredientResponse> ingredients = new ArrayList<>();
     private List<PostNutrientResponse> nutrients = new ArrayList<>();
-    private List<PostImageResponse> postImages = new ArrayList<>();
+    private List<CookingStepResponse> cookingSteps = new ArrayList<>();
 
     private int reviewCount;
     private double averageRating;
@@ -40,20 +42,21 @@ public class PostResponse {
     public PostResponse(Post post, Boolean isScrapped) {
         this.id = post.getId();
         this.title = post.getTitle();
-        this.content = post.getContent();
+        this.description = post.getDescription();
         this.thumbnailUrl = post.getThumbnailUrl() == null ? "" : IMAGE_URL_PREFIX + post.getThumbnailUrl();
         this.cookingTime = post.getCookingTime();
-        this.calories = post.getCalories() + "kcal";
-        this.servings = post.getServings() + "인분";
+        this.calories = post.getCalories();
+        this.servings = post.getServings();
         this.youtubeUrl = post.getYoutubeUrl();
+        this.viewCount = post.getViewCount();
         this.ingredients = post.getIngredients().stream().map(pi -> PostIngredientResponse.builder()
                 .postIngredient(pi).build()).toList();
         this.nutrients = post.getNutrients().stream().map(pn -> PostNutrientResponse.builder()
                 .postNutrient(pn).build()).toList();
         this.reviews = post.getReviews().stream().map(r -> ReviewResponse.builder()
                 .review(r).build()).toList();
-        this.postImages = post.getPostImages().stream().map(pim -> PostImageResponse.builder()
-                .postImage(pim).build()).toList();
+        this.cookingSteps = post.getCookingSteps().stream().map(cs -> CookingStepResponse.builder()
+                .cookingStep(cs).build()).toList();
         this.averageRating = post.getReviews().stream()
                 .mapToDouble(review -> review.getRating()) // 리뷰의 평점 추출
                 .average() // 평균 계산
@@ -66,16 +69,19 @@ public class PostResponse {
         this.tagName = post.getPostTags().stream().map(pt -> pt.getTag().getName()).toList();
     }
 
-    public PostResponse(Long id, String title, String content, String cookingTime, Integer calories, Integer servings, String thumbnailUrl, String youtubeUrl, Boolean isApproved) {
+    public PostResponse(Long id, String title, String description, String thumbnailUrl, String cookingTime, String calories, String servings, String youtubeUrl, Integer viewCount, Boolean isApproved) {
         this.id = id;
         this.title = title;
-        this.content = content;
-        this.cookingTime = cookingTime;
-        this.calories = calories.toString() + "kcal";
-        this.servings = servings.toString() + "인분";
+        this.description = description;
         this.thumbnailUrl = thumbnailUrl;
+        this.cookingTime = cookingTime;
+        this.calories = calories;
+        this.servings = servings;
         this.youtubeUrl = youtubeUrl;
+        this.viewCount = viewCount;
     }
+
+    public PostResponse() {}
 
     public void setScrapCount(int scrapCount) {
         this.scrapCount = scrapCount;
