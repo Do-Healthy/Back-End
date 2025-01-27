@@ -4,6 +4,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import gangdong.diet.domain.cookingstep.entity.CookingStep;
+import gangdong.diet.domain.ingredient.entity.Ingredient;
 import gangdong.diet.domain.post.dto.PostResponse;
 import gangdong.diet.domain.post.dto.PostSearchResponse;
 import gangdong.diet.domain.post.entity.*;
@@ -197,6 +198,46 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
                         .where(ingredient.name.in(keywords)) // 한 번의 조건 처리
         );
     }
+    @Override
+    public List<Post> findAllByIngredient(Ingredient ingredient) {
+        return queryFactory.selectFrom(post)
+                .join(post.ingredients, postIngredient).fetchJoin()
+                .where(postIngredient.ingredient.eq(ingredient))
+                .distinct()
+                .limit(10)
+                .fetch();
+    }
 
+    @Override
+    public List<Post> findRecommendPosts(){
+        return queryFactory.selectFrom(post)
+                .leftJoin(post.reviews).fetchJoin()
+                .leftJoin(post.scraps).fetchJoin()
+                .groupBy(post.id)
+                .orderBy(
+                        post.reviews.size().desc(),
+                        post.scraps.size().desc(),
+                        post.createdAt.desc()
+                )
+                .limit(6)
+                .fetch();
+    }
+
+
+    @Override
+    public Optional<PostResponse> findOneByKeyword(String keyword) {
+        return Optional.ofNullable(queryFactory
+                .select(
+                        Projections.constructor(
+                                PostResponse.class,
+                                post.id, post.title, post.description, post.cookingTime, post.calories, post.servings,
+                                post.thumbnailUrl, post.youtubeUrl, post.isApproved
+                        )
+                )
+                .from(post)
+                .where(post.title.like("%" + keyword.toLowerCase() + "%"))
+                .fetchFirst()
+        );
+    }
 }
 

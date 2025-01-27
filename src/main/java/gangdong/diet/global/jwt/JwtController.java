@@ -1,6 +1,6 @@
 package gangdong.diet.global.jwt;
 
-import gangdong.diet.domain.member.service.TokenService;
+import gangdong.diet.domain.member.service.RedisService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class JwtController {
 
     private final JwtUtil jwtUtil;
-    private final TokenService tokenService;
+    private final RedisService redisService;
 
     @PostMapping("/api/member/reissue")
     public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
@@ -64,7 +63,7 @@ public class JwtController {
         log.info("####### username ####### {}",memberEmail);
         log.info("####### role ####### {}",role);
 
-        String isExist = "refresh_token:"+tokenService.getRefreshToken(memberEmail);
+        String isExist = "refresh_token:"+ redisService.getRefreshToken(memberEmail);
 
         if (isExist == null) {
             //response body
@@ -76,7 +75,7 @@ public class JwtController {
         String newRefresh = jwtUtil.createRefreshToken(memberEmail);
 
         //Refresh 토큰 저장 DB에 기존의 Refresh 토큰 삭제 후 새 Refresh 토큰 저장
-        tokenService.saveRefreshToken("refresh",newRefresh);
+        redisService.saveRefreshToken("refresh",newRefresh);
 
         //response
         response.setHeader("access", newAccess);
@@ -97,7 +96,7 @@ public class JwtController {
         }
         String memberEmail = jwtUtil.getMemberEmail(refresh);
 
-        tokenService.deleteRefreshToken(memberEmail);
+        redisService.deleteRefreshToken(memberEmail);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }

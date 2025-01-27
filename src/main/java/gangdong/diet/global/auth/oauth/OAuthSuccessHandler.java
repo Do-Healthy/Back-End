@@ -1,6 +1,5 @@
 package gangdong.diet.global.auth.oauth;
 
-import gangdong.diet.domain.member.service.TokenService;
 import gangdong.diet.global.auth.MemberDetails;
 import gangdong.diet.global.jwt.JwtUtil;
 import jakarta.servlet.ServletException;
@@ -15,7 +14,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.Iterator;
 

@@ -1,6 +1,5 @@
 package gangdong.diet.global.config;
 
-import gangdong.diet.domain.member.service.TokenService;
 import gangdong.diet.global.auth.oauth.MemberOAuthService;
 import gangdong.diet.global.auth.oauth.OAuthSuccessHandler;
 import gangdong.diet.global.filter.JwtFilter;
