@@ -1,6 +1,5 @@
 package gangdong.diet.global.auth.oauth;
 
-import gangdong.diet.domain.member.service.TokenService;
 import gangdong.diet.global.auth.MemberDetails;
 import gangdong.diet.global.jwt.JwtUtil;
 import jakarta.servlet.ServletException;
@@ -40,7 +39,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         String accessToken = jwtUtil.createAccessToken(memberEmail, role);
         String refreshToken = jwtUtil.createRefreshToken(memberEmail);
 
-        response.addCookie(createCookie("access", accessToken));
+        response.addCookie(createCookie("Authorization", "Bearer_" + accessToken));
         response.addCookie(createCookie("refresh", refreshToken));
 
         response.sendRedirect("http://localhost:5500/html/main.html");

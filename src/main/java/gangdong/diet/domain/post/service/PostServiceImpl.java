@@ -6,6 +6,7 @@ import gangdong.diet.domain.cookingstep.dto.CookingStepResponse;
 import gangdong.diet.domain.cookingstep.entity.CookingStep;
 import gangdong.diet.domain.cookingstep.service.CookingStepService;
 import gangdong.diet.domain.image.service.S3ImageService;
+import gangdong.diet.domain.ingredient.entity.Ingredient;
 import gangdong.diet.domain.ingredient.service.IngredientService;
 import gangdong.diet.domain.member.entity.Member;
 import gangdong.diet.domain.member.repository.MemberRepository;
@@ -19,6 +20,8 @@ import gangdong.diet.domain.post.repository.PostRepository;
 import gangdong.diet.domain.review.entity.Review;
 import gangdong.diet.domain.scrap.entity.Scrap;
 import gangdong.diet.domain.scrap.repository.ScrapRepository;
+import gangdong.diet.domain.survey.entity.Survey;
+import gangdong.diet.domain.survey.repository.SurveyRepository;
 import gangdong.diet.domain.tag.service.TagService;
 import gangdong.diet.global.auth.MemberDetails;
 import gangdong.diet.global.exception.ApiException;
@@ -59,6 +62,7 @@ public class PostServiceImpl implements PostService{
     private final ScrapRepository scrapRepository;
     private final TagService tagService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final SurveyRepository surveyRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -425,4 +429,120 @@ public class PostServiceImpl implements PostService{
         }
     }
 
+    // 관련 추천 게시물 리스트
+    @Override
+    @Transactional
+    public List<PostSearchResponse> findRelatedPosts(Long id) {
+        Post getPost = postRepository.findById(id).orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
+
+        Ingredient ingredient = getPost.getIngredients().get(1).getIngredient();
+        List<Post> posts = postRepository.findAllByIngredient(ingredient);
+
+        List<PostSearchResponse> postSearchResponseList = new ArrayList<>();
+
+        for (Post post : posts) {
+            postSearchResponseList.add(new PostSearchResponse(
+                    post.getId(),
+                    post.getTitle(),
+                    post.getThumbnailUrl(),
+                    post.getCookingTime(),
+                    post.getCalories(),
+                    post.getServings()
+            ));
+        }
+
+        return postSearchResponseList;
+    }
+
+    // 설문지 토대로 밀프랩 추천
+    @Override
+    @Transactional
+    public PostResponse getSurveyPost(MemberDetails memberDetails) {
+
+        Member member = memberRepository.findByMemberEmail(memberDetails.getUsername())
+                .orElseThrow(() -> new ApiException(ErrorCode.MEMBER_NOT_FOUND));
+
+        Survey survey = surveyRepository.findByMemberId(member.getId()).orElseThrow(() -> new ApiException(ErrorCode.SURVEY_NOT_FOUND));
+        List<String> totalList = survey.getTotalList();
+        String surveyResult ="";
+        for(String s : totalList){
+            surveyResult += s+",";
+        }
+
+        String diet = defineDiets().get(surveyResult);
+        PostResponse postResponse = postRepository.findOneByKeyword(diet).orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
+
+        return postResponse;
+    }
+
+    @Override
+    @Transactional
+    public List<PostRedis> getRecommendPosts() {
+        List<Post> posts = postRepository.findRecommendPosts();
+        List<PostRedis> postRedisList = new ArrayList<>();
+
+         posts.stream().forEach(post ->
+                postRedisList.add(
+                PostRedis.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .description(post.getDescription())
+                .thumbnailUrl(post.getThumbnailUrl())
+                .cookingTime(post.getCookingTime())
+                .calories(post.getCalories())
+                .servings(post.getServings())
+                .youtubeUrl(post.getYoutubeUrl())
+                .viewCount(post.getViewCount())
+                .ingredients(PostRedis.builder().build().getIngredients())
+                .nutrients(PostRedis.builder().build().getNutrients())
+                .cookingSteps(PostRedis.builder().build().getCookingSteps())
+                .reviews(PostRedis.builder().build().getReviews())
+                .build()
+                )
+         );
+
+        redisTemplate.opsForValue().set("post:view:", postRedisList);
+
+
+        return postRedisList;
+    }
+
+    // 조건 정의
+    public static Map<String, String> defineDiets() {
+        Map<String, String> dietMap = new HashMap<>();
+
+        dietMap.put("소화문제", "밀프랩1");
+        dietMap.put("체중문제", "밀프랩2");
+        dietMap.put("피부모발", "밀프랩3");
+        dietMap.put("심혈관혈압", "밀프랩4");
+        dietMap.put("면역감염", "밀프랩5");
+        dietMap.put("소화문제,체중문제", "밀프랩6");
+        dietMap.put("소화문제,피부모발", "밀프랩7");
+        dietMap.put("소화문제,심혈관혈압", "밀프랩8");
+        dietMap.put("소화문제,면역감염", "밀프랩9");
+        dietMap.put("체중문제,피부모발", "밀프랩10");
+        dietMap.put("체중문제,심혈관혈압", "밀프랩11");
+        dietMap.put("체중문제,면역감염", "밀프랩12");
+        dietMap.put("피부모발,심혈관혈압", "밀프랩13");
+        dietMap.put("피부모발,면역감염", "밀프랩14");
+        dietMap.put("심혈관혈압,면역감염", "밀프랩15");
+        dietMap.put("소화문제,체중문제,피부모발", "밀프랩16");
+        dietMap.put("소화문제,체중문제,심혈관혈압", "밀프랩17");
+        dietMap.put("소화문제,체중문제,면역감염", "밀프랩18");
+        dietMap.put("소화문제,피부모발,심혈관혈압", "밀프랩19");
+        dietMap.put("소화문제,피부모발,면역감염", "밀프랩20");
+        dietMap.put("소화문제,심혈관혈압,면역감염", "밀프랩21");
+        dietMap.put("체중문제,피부모발,심혈관혈압", "밀프랩22");
+        dietMap.put("체중문제,피부모발,면역감염", "밀프랩23");
+        dietMap.put("체중문제,심혈관혈압,면역감염", "밀프랩24");
+        dietMap.put("피부모발,심혈관혈압,면역감염", "밀프랩25");
+        dietMap.put("소화문제,체중문제,피부모발,심혈관혈압", "밀프랩26");
+        dietMap.put("소화문제,체중문제,피부모발,면역감염", "밀프랩27");
+        dietMap.put("소화문제,체중문제,심혈관혈압,면역감염", "밀프랩28");
+        dietMap.put("소화문제,피부모발,심혈관혈압,면역감염", "밀프랩29");
+        dietMap.put("체중문제,피부모발,심혈관혈압,면역감염", "밀프랩30");
+        dietMap.put("소화문제,체중문제,피부모발,심혈관혈압,면역감염", "밀프랩31");
+
+        return dietMap;
+    }
 }

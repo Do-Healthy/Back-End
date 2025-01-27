@@ -24,7 +24,9 @@ public enum ErrorCode {
 
     REDIS_CONNECTION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Redis 서버와의 연결에 실패했습니다."),
     REDIS_COMMAND_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Redis 명령어 처리 중 오류가 발생했습니다."),
-    REDIS_DATA_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Redis에서 처리된 데이터에 문제가 있습니다.");
+    REDIS_DATA_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Redis에서 처리된 데이터에 문제가 있습니다."),
+
+    SURVEY_NOT_FOUND(HttpStatus.NOT_FOUND, "설문지를 찾을 수 가 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String msg;

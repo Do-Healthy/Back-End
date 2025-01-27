@@ -1,5 +1,6 @@
 package gangdong.diet.domain.post.controller;
 
+import gangdong.diet.domain.post.dto.PostRedis;
 import gangdong.diet.domain.post.dto.PostRequest;
 import gangdong.diet.domain.post.dto.PostResponse;
 import gangdong.diet.domain.post.dto.PostSearchResponse;
@@ -7,7 +8,6 @@ import gangdong.diet.domain.post.service.PostService;
 import gangdong.diet.global.auth.MemberDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
@@ -66,5 +66,27 @@ public class PostController {
         postService.deletePost(id, memberDetails);
         return ResponseEntity.ok().body("삭제가 완료됐습니다.");
     }
+
+    @Operation(summary = "재료 추천 게시물 조회", description = "게시물 id를 통해 관련 추천 리스트를 조회 합니다.")
+    @GetMapping("recommended/{id}")
+    public ResponseEntity<List<PostSearchResponse>> getRecommendedPostsById(@PathVariable Long id) {
+        List<PostSearchResponse> list = postService.findRelatedPosts(id);
+        return ResponseEntity.ok(list);
+    }
+
+    @Operation(summary = "인게 게시물 조회", description = "인기 게시물을 조회 합니다.")
+    @GetMapping("recommended")
+    public ResponseEntity<List<PostRedis>> getRecommendedPostsById() {
+        List<PostRedis> responsePostList = postService.getRecommendPosts();
+        return ResponseEntity.ok(responsePostList);
+    }
+
+    @Operation(summary = "설문조사 결과지로 관련 게시물 조회", description = "멤버의 id를 통해 설문지와 관련 된 게시물을 조회 합니다.")
+    @GetMapping("survey")
+    public ResponseEntity<PostResponse> getSurveyPost(@AuthenticationPrincipal MemberDetails memberDetails) {
+        PostResponse postResponse = postService.getSurveyPost(memberDetails);
+        return ResponseEntity.ok(postResponse);
+    }
+
 
 }

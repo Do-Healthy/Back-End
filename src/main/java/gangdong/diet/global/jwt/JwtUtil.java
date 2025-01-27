@@ -48,7 +48,7 @@ public class JwtUtil {
     }
 
     public String getAccess(String token){
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("access", String.class);
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("Authorization", String.class);
     }
 
     public String getRefresh(String token){
