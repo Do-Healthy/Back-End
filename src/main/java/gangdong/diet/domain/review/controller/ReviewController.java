@@ -18,14 +18,14 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @PostMapping("/posts/{postId}/reviews")
-    public ResponseEntity addReview(@PathVariable("postId") Long postId,
+    @PostMapping("/recipes/{recipeId}/reviews")
+    public ResponseEntity addReview(@PathVariable("recipeId") Long postId,
                                     @Validated @RequestBody ReviewRequest request,
                                     @AuthenticationPrincipal MemberDetails memberDetails) { // AuthenticationPrincipal
 
         reviewService.addReview(postId, request, memberDetails);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body("리뷰 작성을 완료했습니다.");
     }
 
     @PutMapping("/reviews/{reviewId}")
@@ -35,7 +35,7 @@ public class ReviewController {
 
         reviewService.updateReview(reviewId, request, memberDetails);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body("리뷰 수정을 완료했습니다.");
     }
 
     @DeleteMapping("/reviews/{reviewId}")
@@ -43,7 +43,7 @@ public class ReviewController {
 
         reviewService.deleteReview(reviewId, memberDetails);
 
-        return ResponseEntity.ok().body("삭제가 완료됐습니다.");
+        return ResponseEntity.ok().body("리뷰 삭제를 완료됐습니다.");
     }
 
 }

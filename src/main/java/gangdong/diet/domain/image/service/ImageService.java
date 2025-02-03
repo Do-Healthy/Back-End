@@ -25,7 +25,7 @@ public class ImageService {
                 for (int i = 0; i < images.size(); i++) {
                     MultipartFile image = images.get(i);
                     // 이미지 업로드
-                    String imageUrl = s3ImageService.uploadFile(image, "post/" + "afterSaved" + "/");
+                    String imageUrl = s3ImageService.uploadFile(image, "post/afterSaved/");
                     uploadedImageUrls.add(imageUrl);
                 }
             } catch (Exception e) {

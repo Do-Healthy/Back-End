@@ -38,6 +38,7 @@ public class ExceptionController {
     public ResponseEntity<ErrorResponse> exception(ApiException e){
 
         ErrorResponse errorResponse = ErrorResponse.builder()
+                .code(e.getErrorCode().getHttpStatus().value())
                 .httpStatus(e.getErrorCode().getHttpStatus())
                 .message(e.getMessage())
                 .build();

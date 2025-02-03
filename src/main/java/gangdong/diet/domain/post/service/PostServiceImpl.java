@@ -62,7 +62,7 @@ public class PostServiceImpl implements PostService{
 
     @Transactional(readOnly = true)
     @Override
-    public Slice<PostSearchResponse> findByKeywords(Long cursorId, String keywords, int size) {
+    public Slice<PostSearchResponse> findByKeywords(String category, Long cursorId, String keywords, int size) {
 
         cursorId = cursorId == null ? 0 : cursorId;
 
@@ -70,36 +70,37 @@ public class PostServiceImpl implements PostService{
             return findAllPosts(cursorId, size); // 전체 조회 메서드 호출
         }
 
-        // 공백 제거 후 쉼표 기준으로 리스트 생성
-        String newKeywords = keywords.replaceAll(" ", "");
-        StringTokenizer tokenizer = new StringTokenizer(newKeywords, ",");
-        List<String> finalKeywords = new ArrayList<>();
-        while(tokenizer.hasMoreTokens()) {
-            finalKeywords.add(tokenizer.nextToken());
-        }
+        // 쉼표로 단어를 나누고 양 끝의 공백 제거
+        List<String> finalKeywords = Arrays.stream(keywords.split(","))
+                .map(String::trim) // 각 단어의 양 끝 공백 제거
+                .filter(s -> !s.isEmpty()) // 비어있는 단어 제거
+                .collect(Collectors.toList());
 
         // Repository 호출
-        List<PostSearchResponse> recipeResults = postRepository.findByRecipeName(cursorId, finalKeywords, size);
-        List<PostSearchResponse> ingredientResults = postRepository.findByIngredient(cursorId, finalKeywords, size);
+        List<PostSearchResponse> searchResults = new ArrayList<>();
 
-        // 합친 후 중복 제거
-        Set<PostSearchResponse> mergedResultsSet = new LinkedHashSet<>(recipeResults);
-        mergedResultsSet.addAll(ingredientResults);
+        if ("recipe".equals(category)) {
+            searchResults = postRepository.findByRecipeName(cursorId, finalKeywords, size);
+        } else if ("ingredient".equals(category)) {
+            searchResults = postRepository.findByIngredient(cursorId, finalKeywords, size);
+        } else {
+            throw new ApiException(ErrorCode.INVALID_CATEGORY);
+        }
 
         Member member = isLoggedIn();
 
         // 스크랩 여부 확인
         List<Long> scrappedPostIds;
         if (member != null) {
-            scrappedPostIds = isScrapped(mergedResultsSet, member.getId());
+            scrappedPostIds = isScrapped(searchResults, member.getId());
         } else {
             scrappedPostIds = List.of();
         }
 
 
-        List<PostSearchResponse> finalResults = mergedResultsSet.stream().map(psr -> {
-                    psr.setIsScrapped(scrappedPostIds.contains(psr.getId()));
-                    return psr;
+        List<PostSearchResponse> finalResults = searchResults.stream().map(sr -> {
+                    sr.setIsScrapped(scrappedPostIds.contains(sr.getId()));
+                    return sr;
                 })
                 .collect(Collectors.toList());
 
@@ -156,12 +157,12 @@ public class PostServiceImpl implements PostService{
         String redisPostKey = "post:details:" + postId;
         String redisViewKey = "post:view:" + postId;
 
-        // ObjectMapper for JSON serialization
+        // JSON 직렬화를 위한 ObjectMapper
         ObjectMapper objectMapper = new ObjectMapper();
 
-        // Try to get cached post details from Redis
+        // 레디스에서 게시물 가져오기
         PostResponse postResponse = null;
-        try {
+        try { // todo 에러에 대한 대비
             String cachedPostResponse = (String) redisTemplate.opsForValue().get(redisPostKey);
             if (cachedPostResponse != null) {
                 postResponse = objectMapper.readValue(cachedPostResponse, PostResponse.class);
@@ -175,7 +176,7 @@ public class PostServiceImpl implements PostService{
             log.error("Redis로부터 로드 하는 작업중 에러가 발생했습니다.", e);
         }
 
-        // If not cached, retrieve from database
+        // 캐싱 되어있지 않은 경우 DB로 부터 받아옴.
         if (postResponse == null) {
             postResponse = postRepository.getOnePost(postId).orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
 
@@ -211,16 +212,20 @@ public class PostServiceImpl implements PostService{
         postResponse.setScrapCount(scraps.size());
 
         try {
-            Integer redisViewCount = (Integer) redisTemplate.opsForValue().get(redisViewKey);
-            if (redisViewCount == null) {
-                redisViewCount = postResponse.getViewCount();
-                redisTemplate.opsForValue().set(redisViewKey, redisViewCount);
-            }
-            // Redis 조회수 증가
+            // 조회수 증가를 원자적으로 수행
             Long incrementedViewCount = redisTemplate.opsForValue().increment(redisViewKey);
-            postResponse.setViewCount(incrementedViewCount != null ? incrementedViewCount.intValue() : postResponse.getViewCount());
-        } catch (RedisException e) {
+
+            if (incrementedViewCount == 1) {
+                // Redis에 해당 키가 처음 생성된 경우, 기존 DB 조회수를 반영해야 함
+                redisTemplate.opsForValue().set(redisViewKey, postResponse.getViewCount() + 1);
+                incrementedViewCount = postResponse.getViewCount() + 1;
+            }
+
+            postResponse.setViewCount(incrementedViewCount);
+
+        } catch (Exception e) {
             log.warn("조회수를 Redis에서 처리하는 중 오류 발생. 기본 조회수로 설정. postId: {}, 오류: {}", postId, e.getMessage());
+            postResponse.setViewCount(postResponse.getViewCount()); // 예외 발생 시 기존 조회수 유지
         }
 
         Member member = isLoggedIn();
@@ -350,7 +355,7 @@ public class PostServiceImpl implements PostService{
         String redisViewKey = "post:view:" + postId;
 
         try {// todo 이벤트 리스너로 뺄 지 고민, 여기서 삭제 혹은 조회수 저장하다가 데이터 날아가면 조회수 누락됨.
-            Integer viewCount = (Integer) redisTemplate.opsForValue().get(redisViewKey);
+            Long viewCount = (Long) redisTemplate.opsForValue().get(redisViewKey);
             if (viewCount != null) {
                 post.setViewCount(viewCount);
             }
@@ -412,7 +417,9 @@ public class PostServiceImpl implements PostService{
         if (keys != null) {
             for (String key : keys) {
                 Long postId = Long.valueOf(key.split(":")[2]);
-                Integer viewCount = Integer.parseInt(redisTemplate.opsForValue().get(key).toString());
+                Object viewCountObj = redisTemplate.opsForValue().get(key);
+                Long viewCount = (viewCountObj != null) ? Long.parseLong(viewCountObj.toString()) : 0L;
+
 
                 // 데이터베이스에 반영
                 Post post = postRepository.findById(postId).orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));

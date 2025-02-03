@@ -8,7 +8,7 @@ import org.springframework.data.domain.Slice;
 
 public interface PostService {
 
-    public Slice<PostSearchResponse> findByKeywords(Long cursorId, String keywords, int size);
+    public Slice<PostSearchResponse> findByKeywords(String category, Long cursorId, String keywords, int size);
 
     public Slice<PostSearchResponse> findAllPosts(Long cursorId, int size);
 

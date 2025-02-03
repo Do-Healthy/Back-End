@@ -23,7 +23,7 @@ public class PostResponse {
     private String calories;
     private String servings;
     private String youtubeUrl;
-    @Setter private Integer viewCount;
+    @Setter private Long viewCount;
     private List<PostIngredientResponse> ingredients = new ArrayList<>();
     private List<PostNutrientResponse> nutrients = new ArrayList<>();
     private List<CookingStepResponse> cookingSteps = new ArrayList<>();
@@ -69,7 +69,7 @@ public class PostResponse {
         this.tagName = post.getPostTags().stream().map(pt -> pt.getTag().getName()).toList();
     }
 
-    public PostResponse(Long id, String title, String description, String thumbnailUrl, String cookingTime, String calories, String servings, String youtubeUrl, Integer viewCount, Boolean isApproved) {
+    public PostResponse(Long id, String title, String description, String thumbnailUrl, String cookingTime, String calories, String servings, String youtubeUrl, Long viewCount, Boolean isApproved) {
         this.id = id;
         this.title = title;
         this.description = description;

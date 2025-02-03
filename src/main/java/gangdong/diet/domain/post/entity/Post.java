@@ -46,7 +46,7 @@ public class Post extends BaseEntity {
 
     @Setter
     @Column(nullable = false)
-    private Integer viewCount = 0;
+    private Long viewCount = 0L;
 
     @Setter
     private Boolean isApproved;
@@ -78,7 +78,7 @@ public class Post extends BaseEntity {
     private List<CookingStep> cookingSteps = new ArrayList<>();
 
     @Builder
-    private Post(Long id, String title, String description, String cookingTime, String calories, String servings, String thumbnailUrl, String youtubeUrl, Integer viewCount, Member member, List<PostIngredient> postIngredients, List<PostNutrient> postNutrients, List<CookingStep> cookingSteps, Boolean isApproved, List<PostTag> postTags) {
+    private Post(Long id, String title, String description, String cookingTime, String calories, String servings, String thumbnailUrl, String youtubeUrl, Long viewCount, Member member, List<PostIngredient> postIngredients, List<PostNutrient> postNutrients, List<CookingStep> cookingSteps, Boolean isApproved, List<PostTag> postTags) {
         this.id = id;
         this.title = title;
         this.description = description;

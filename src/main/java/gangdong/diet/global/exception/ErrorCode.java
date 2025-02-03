@@ -21,6 +21,16 @@ public enum ErrorCode {
     THUMBNAIL_UPLOAD_FAIL(HttpStatus.BAD_REQUEST, "썸네일 업로드를 실패했습니다."),
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "올바른 요청이 아닙니다."),
     UNAUTHORIZED_ACTION(HttpStatus.BAD_REQUEST, "권한이 없습니다."),
+    INVALID_CATEGORY(HttpStatus.BAD_REQUEST, "카테고리명이 일치하지 않습니다."),
+
+    REVIEW_POST_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰 작업을 위한 게시물을 찾을 수 없습니다."),
+    REVIEW_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "리뷰 작업을 위한 회원 정보를 찾을 수 없습니다."),
+
+    SCRAP_POST_NOT_FOUND(HttpStatus.NOT_FOUND, "스크랩 작업을 위한 게시물을 찾을 수 없습니다."),
+    SCRAP_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "스크랩 작업을 위한 회원 정보를 찾을 수 없습니다."),
+
+    EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "Access Token이 만료되었습니다."),
+    INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 Access Token입니다."),
 
     REDIS_CONNECTION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Redis 서버와의 연결에 실패했습니다."),
     REDIS_COMMAND_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Redis 명령어 처리 중 오류가 발생했습니다."),

@@ -194,7 +194,9 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
         return post.id.in(
                 select(postIngredient.post.id).from(postIngredient)
                         .join(postIngredient.ingredient, ingredient)
-                        .where(ingredient.name.in(keywords)) // 한 번의 조건 처리
+                        .where(ingredient.name.in(keywords))
+                        .groupBy(postIngredient.post.id)
+                        .having(ingredient.name.count().eq((long) keywords.size()))
         );
     }
 
