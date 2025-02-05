@@ -15,6 +15,10 @@ spring:
     username: ${LOCAL_DB_USERNAME}
     password: ${LOCAL_DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  elasticsearch:
+    uris: http://localhost:9200
+#    username: elastic
+#    password: elastic
 
   jwt:
     secret: ${LOCAL_JWT_SECRET}
