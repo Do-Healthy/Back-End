@@ -2,6 +2,7 @@ package gangdong.diet.domain.post.repository;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import gangdong.diet.domain.cookingstep.entity.CookingStep;
 import gangdong.diet.domain.post.dto.PostResponse;
@@ -45,6 +46,7 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
                         eqCursorId(cursorId),
                         containsRecipeNameKeywords(keywords)  // 키워드 조건 추가
                 )
+                .orderBy(post.id.asc())
                 .limit(size + 1)  // 다음 페이지 유무 확인을 위해 한 개 더 요청
                 .fetch(); // 결과가 없으면 빈 리스트 반환함
 
@@ -167,20 +169,23 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
 
 
 
-
     private BooleanExpression eqCursorId(Long cursorId) {
         return (cursorId == null) ? null : post.id.gt(cursorId);
     }
 
 
+    private static final double SIMILARITY_THRESHOLD = 0.3; // 여기 값 조정 가능
+
     private BooleanExpression containsRecipeNameKeywords(List<String> keywords) {
         if (CollectionUtils.isEmpty(keywords)) {
-            return null; // 현재 상황에서 keywords가 빈 값일 경우 이걸 쓰면 전체 반환됨. querydsl의 BooleanExpression이 null일 경우 조건에서 제외되고 다른 조건만 적용.
+            return null;
         }
 
-        // Querydsl의 anyOf()를 활용하여 OR 조건 생성
         return keywords.stream()
-                .map(keyword -> post.title.containsIgnoreCase(keyword))
+                .map(keyword -> post.title.likeIgnoreCase("%" + keyword + "%")  // ILIKE 추가
+                        .or(Expressions.numberTemplate(Double.class,
+                                        "similarity({0}, {1})", post.title, keyword)
+                                .gt(SIMILARITY_THRESHOLD)))
                 .reduce(BooleanExpression::or)
                 .orElse(post.id.isNull());
     }

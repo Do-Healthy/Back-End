@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gangdong.diet.domain.cookingstep.dto.CookingStepResponse;
 import gangdong.diet.domain.cookingstep.entity.CookingStep;
 import gangdong.diet.domain.cookingstep.service.CookingStepService;
-import gangdong.diet.domain.elastic.domain.EsPostDocument;
-import gangdong.diet.domain.elastic.service.EsPostService;
 import gangdong.diet.domain.image.service.S3ImageService;
 import gangdong.diet.domain.ingredient.service.IngredientService;
 import gangdong.diet.domain.member.entity.Member;
@@ -61,7 +59,6 @@ public class PostServiceImpl implements PostService{
     private final ScrapRepository scrapRepository;
     private final TagService tagService;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final EsPostService esPostService;
 
     @Transactional(readOnly = true)
     @Override
@@ -79,34 +76,15 @@ public class PostServiceImpl implements PostService{
                 .filter(s -> !s.isEmpty()) // 비어있는 단어 제거
                 .collect(Collectors.toList());
 
-//        // Repository 호출
-//        List<PostSearchResponse> searchResults = new ArrayList<>();
-//
-//        if ("recipe".equals(category)) {
-//            searchResults = postRepository.findByRecipeName(cursorId, finalKeywords, size);
-//        } else if ("ingredient".equals(category)) {
-//            searchResults = postRepository.findByIngredient(cursorId, finalKeywords, size);
-//        } else {
-//            throw new ApiException(ErrorCode.INVALID_CATEGORY);
-//        }
-
+        // Repository 호출
         List<PostSearchResponse> searchResults = new ArrayList<>();
 
-        for (String keyword : finalKeywords) {
-            List<EsPostDocument> esResults = esPostService.searchPosts(keyword);
-
-            List<PostSearchResponse> esResponses = esResults.stream()
-                    .map(es -> new PostSearchResponse(
-                            Long.parseLong(es.getEsPostId()),
-                            es.getTitle(),
-                            es.getThumbnailUrl(),
-                            es.getCookingTime(),
-                            es.getCalories(),
-                            es.getServings()
-                    ))
-                    .collect(Collectors.toList());
-
-            searchResults.addAll(esResponses);
+        if ("recipe".equals(category)) {
+            searchResults = postRepository.findByRecipeName(cursorId, finalKeywords, size);
+        } else if ("ingredient".equals(category)) {
+            searchResults = postRepository.findByIngredient(cursorId, finalKeywords, size);
+        } else {
+            throw new ApiException(ErrorCode.INVALID_CATEGORY);
         }
 
         // 중복 제거
@@ -338,9 +316,38 @@ public class PostServiceImpl implements PostService{
         tagService.registerTags(postRequest.getTags(), post);
         cookingStepService.registerCookingSteps(postRequest.getCookingSteps(), post);
 
-        esPostService.saveToEs(post);
-
         return post.getId();
+    }
+
+    @Override
+    @Transactional // Todo 나중에 지워야함.
+    public Long savePostAll(List<PostRequest> postRequests, MemberDetails memberDetails) {
+
+        Member member = memberRepository.findByMemberEmail(memberDetails.getUsername())
+                .orElseThrow(() -> new ApiException(ErrorCode.MEMBER_NOT_FOUND));
+
+        for (PostRequest postRequest : postRequests) {
+            Post post = Post.builder()
+                    .title(postRequest.getTitle())
+                    .description(postRequest.getDescription())
+                    .cookingTime(postRequest.getCookingTime())
+                    .calories(postRequest.getCalories())
+                    .servings(postRequest.getServings())
+                    .thumbnailUrl(postRequest.getThumbnailUrl())
+                    .youtubeUrl(postRequest.getYoutubeUrl())
+                    .isApproved(false)
+                    .member(member)
+                    .build();
+
+            postRepository.save(post);
+
+            ingredientService.registerIngredient(postRequest.getIngredients(), post);
+            nutrientService.registerNutrient(postRequest.getNutrients(), post);
+            tagService.registerTags(postRequest.getTags(), post);
+            cookingStepService.registerCookingSteps(postRequest.getCookingSteps(), post);
+        }
+
+        return null;
     }
 
     @Transactional
@@ -376,9 +383,6 @@ public class PostServiceImpl implements PostService{
 
         // 이미지 업데이트
         cookingStepService.updateCookingSteps(postRequest.getCookingSteps(), post);
-
-        // 엘라스틱서치에 업데이트
-        esPostService.updatePostInEs(post);
 
         Boolean isScrapped = member == null ? false : scrapRepository.existsByMemberIdAndPostId(member.getId(), postId);
 
