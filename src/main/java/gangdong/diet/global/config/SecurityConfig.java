@@ -1,6 +1,5 @@
 package gangdong.diet.global.config;
 
-import gangdong.diet.domain.member.service.TokenService;
 import gangdong.diet.global.auth.oauth.MemberOAuthService;
 import gangdong.diet.global.auth.oauth.OAuthSuccessHandler;
 import gangdong.diet.global.filter.JwtFilter;
@@ -15,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -24,6 +24,7 @@ public class SecurityConfig {
     private final OAuthSuccessHandler oAuthSuccessHandler;
     private final MemberOAuthService memberOAuthService;
     private final JwtUtil jwtUtil;
+    private final CorsFilter corsFilter;
 
 
     @Bean
@@ -37,7 +38,8 @@ public class SecurityConfig {
                 .formLogin(formLogin -> formLogin.disable());
 
         http
-                .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                .addFilter(corsFilter);
 
         http
                 .authorizeRequests(auth -> auth.anyRequest().permitAll());

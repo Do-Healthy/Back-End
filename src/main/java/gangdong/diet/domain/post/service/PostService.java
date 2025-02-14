@@ -1,5 +1,6 @@
 package gangdong.diet.domain.post.service;
 
+import gangdong.diet.domain.post.dto.PostRedis;
 import gangdong.diet.domain.post.dto.PostRequest;
 import gangdong.diet.domain.post.dto.PostResponse;
 import gangdong.diet.domain.post.dto.PostSearchResponse;
@@ -26,6 +27,11 @@ public interface PostService {
 
     List<PostSearchResponse> getPopularPosts();
 
+    public List<PostSearchResponse> findRelatedPosts(Long id);
+
+    public List<PostRedis> getRecommendPosts();
+
+    public PostResponse getSurveyPost(MemberDetails memberDetails);
 
 
 }

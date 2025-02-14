@@ -1,6 +1,7 @@
 package gangdong.diet.domain.post.repository;
 
 import gangdong.diet.domain.cookingstep.entity.CookingStep;
+import gangdong.diet.domain.ingredient.entity.Ingredient;
 import gangdong.diet.domain.post.dto.PostResponse;
 import gangdong.diet.domain.post.dto.PostSearchResponse;
 import gangdong.diet.domain.post.entity.*;
@@ -33,5 +34,11 @@ public interface PostQRepository {
     List<PostSearchResponse> getPopularPosts();
 
 //    List<Post> findAllPosts(Long cursorId, int size);
+
+    List<Post> findAllByIngredient(Ingredient ingredient);
+
+    List<Post> findRecommendPosts();
+
+    Optional<PostResponse> findOneByKeyword(String keyword);
 
 }
