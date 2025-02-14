@@ -68,4 +68,10 @@ public class PostController {
         return ResponseEntity.ok().body("삭제가 완료됐습니다.");
     }
 
+    @GetMapping("/populars")
+    public ResponseEntity<List<PostSearchResponse>> getPopularPosts() {
+        List<PostSearchResponse> responses = postService.getPopularPosts();
+        return ResponseEntity.ok().body(responses);
+    }
+
 }

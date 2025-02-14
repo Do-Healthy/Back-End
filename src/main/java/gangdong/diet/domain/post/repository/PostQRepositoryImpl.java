@@ -1,8 +1,12 @@
 package gangdong.diet.domain.post.repository;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import gangdong.diet.domain.cookingstep.entity.CookingStep;
 import gangdong.diet.domain.post.dto.PostResponse;
@@ -73,6 +77,7 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
                         eqCursorId(cursorId),
                         findByKeywordOfIngredient(keywords)
                 )
+                .orderBy(post.id.asc())
                 .limit(size + 1)
                 .fetch();
 
@@ -167,7 +172,38 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
                 .fetch();
     }
 
+    @Override
+    public List<PostSearchResponse> getPopularPosts() {
+        // 리뷰 평점 평균
+        NumberExpression<Double> avgReviewScore = review.rating.avg().coalesce(0.0);
 
+        // 리뷰 개수
+        NumberExpression<Long> reviewCount = review.count().coalesce(0L);
+
+        // 스크랩 개수
+        NumberExpression<Long> scrapCount = scrap.count().coalesce(0L);
+
+        // 조회수 (Post 엔티티에 존재한다고 가정)
+        NumberExpression<Long> viewCount = post.viewCount.coalesce(0L);
+
+        // 가중치를 반영한 인기 점수 계산
+        NumberExpression<Double> popularityScore = scrapCount.doubleValue().multiply(0.35)
+                .add(reviewCount.doubleValue().multiply(0.35))
+                .add(avgReviewScore.multiply(0.2))
+                .add(viewCount.doubleValue().multiply(0.1));
+
+        return queryFactory
+                .select(Projections.constructor(
+                        PostSearchResponse.class, post.id, post.title, post.thumbnailUrl, post.cookingTime, post.calories, post.servings
+                ))
+                .from(post)
+                .leftJoin(review).on(review.post.id.eq(post.id)) // 리뷰와 조인
+                .leftJoin(scrap).on(scrap.post.id.eq(post.id)) // 스크랩과 조인
+                .groupBy(post.id)
+                .orderBy(popularityScore.desc()) // 가중치 적용 후 인기순 정렬
+                .limit(10) // 상위 10개 게시물 가져오기
+                .fetch();
+    }
 
     private BooleanExpression eqCursorId(Long cursorId) {
         return (cursorId == null) ? null : post.id.gt(cursorId);

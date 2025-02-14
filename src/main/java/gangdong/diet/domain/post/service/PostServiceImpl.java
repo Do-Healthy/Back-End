@@ -1,6 +1,7 @@
 package gangdong.diet.domain.post.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gangdong.diet.domain.cookingstep.dto.CookingStepResponse;
 import gangdong.diet.domain.cookingstep.entity.CookingStep;
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -66,9 +68,9 @@ public class PostServiceImpl implements PostService{
 
         cursorId = cursorId == null ? 0 : cursorId;
 
-        if (!StringUtils.hasText(keywords)) { // keywords가 null, 빈 문자열, 공백일 경우
-            return findAllPosts(cursorId, size); // 전체 조회 메서드 호출
-        }
+//        if (!StringUtils.hasText(keywords)) { // keywords가 null, 빈 문자열, 공백일 경우
+//            return findAllPosts(cursorId, size); // 전체 조회 메서드 호출
+//        }
 
         // 쉼표로 단어를 나누고 양 끝의 공백 제거
         List<String> finalKeywords = Arrays.stream(keywords.split(","))
@@ -79,7 +81,7 @@ public class PostServiceImpl implements PostService{
         // Repository 호출
         List<PostSearchResponse> searchResults = new ArrayList<>();
 
-        if ("recipe".equals(category)) {
+        if ("recipe".equals(category) || !StringUtils.hasText(keywords)) {
             searchResults = postRepository.findByRecipeName(cursorId, finalKeywords, size);
         } else if ("ingredient".equals(category)) {
             searchResults = postRepository.findByIngredient(cursorId, finalKeywords, size);
@@ -110,43 +112,6 @@ public class PostServiceImpl implements PostService{
                 .collect(Collectors.toList());
 
         // 페이징 처리 및 Slice 반환
-        boolean hasNext = finalResults.size() > size;
-        if (hasNext) {
-            finalResults = finalResults.subList(0, size); // 초과 데이터 제거
-        }
-
-        return new SliceImpl<>(finalResults, Pageable.ofSize(size), hasNext);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Slice<PostSearchResponse> findAllPosts(Long cursorId, int size) {
-        List<PostSearchResponse> posts = postRepository.findByRecipeName(cursorId, null, size);
-
-        Member member = isLoggedIn();
-
-        // 스크랩 여부 확인
-        List<Long> scrappedPostIds;
-        if (member != null) {
-            scrappedPostIds = isScrapped(posts, member.getId());
-        } else {
-            scrappedPostIds = List.of();
-        }
-
-
-//        List<PostSearchResponse> finalResults = posts.stream()
-//                .map(post -> PostSearchResponse.builder()
-//                        .post(post)
-//                        .isScrapped(scrappedPostIds.contains(post.getId()))
-//                        .build())
-//                .toList();
-        List<PostSearchResponse> finalResults = posts.stream().map(post -> {
-                    post.setIsScrapped(scrappedPostIds.contains(post.getId()));
-                    return post;
-                })
-                .collect(Collectors.toList());
-
-
         boolean hasNext = finalResults.size() > size;
         if (hasNext) {
             finalResults = finalResults.subList(0, size); // 초과 데이터 제거
@@ -410,7 +375,7 @@ public class PostServiceImpl implements PostService{
 
     @Transactional
     @Override
-    public void deletePost(Long postId, MemberDetails memberDetails) { // TODO 사용자 검증 추가
+    public void deletePost(Long postId, MemberDetails memberDetails) {
         Member member = memberRepository.findByMemberEmail(memberDetails.getUsername())
                 .orElseThrow(() -> new ApiException(ErrorCode.MEMBER_NOT_FOUND));
 
@@ -421,10 +386,42 @@ public class PostServiceImpl implements PostService{
             throw new ApiException(ErrorCode.UNAUTHORIZED_ACTION);
         }
 
-        s3ImageService.deleteFile(post.getThumbnailUrl());
-        post.getCookingSteps().forEach(cookingStep -> s3ImageService.deleteFile(cookingStep.getImageUrl()));
+        try {
+            s3ImageService.deleteFile(post.getThumbnailUrl());
+            cookingStepService.deleteCookingSteps(post);
+        } catch (Exception e) {
+            log.error("S3 이미지 삭제 중 오류 발생: {}", e.getMessage());
+            throw new ApiException(ErrorCode.S3_DELETE_FAILED);
+        }
 
-        postRepository.deleteById(postId);
+        postRepository.delete(post);
+    }
+
+    @Override
+    public List<PostSearchResponse> getPopularPosts() {
+        String redisPopularPostsKey = "post:popular";
+
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        List<PostSearchResponse> postSearchResponses = new ArrayList<>();
+
+        try { // todo 에러에 대한 대비
+            String cachedPostResponse = (String) redisTemplate.opsForValue().get(redisPopularPostsKey);
+            if (cachedPostResponse != null) {
+                postSearchResponses = objectMapper.readValue(cachedPostResponse, new TypeReference<List<PostSearchResponse>>() {});
+            }
+        } catch (RedisException e) {
+            log.error("Redis에서 캐시된 인기게시물 데이터를 가져오던 중 오류 발생. 오류: {}", e.getMessage());
+            postSearchResponses = postRepository.getPopularPosts();
+            // todo throw 안 넣어도 되겠는지.
+        } catch (JsonProcessingException e) {
+            log.error("캐시된 인기게시물 데이터를 JSON으로 변환 중 오류 발생. 오류: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Redis로부터 로드 하는 작업중 에러가 발생했습니다.", e);
+        }
+
+        return postSearchResponses;
+
     }
 
     private Member isLoggedIn() { //TODO 유저 합쳐지면 이거 바꿔야함   * 그리고 이거 고민인게 이렇게 스크랩 한 게시물 찾는게 별로 안 좋은것 같음.
@@ -447,7 +444,7 @@ public class PostServiceImpl implements PostService{
     }
 
 
-    @Scheduled(fixedRate = 3600000) // 매 1시간마다 실행
+    @Scheduled(fixedRate = 21600000) // 매 6시간마다 실행
     public void syncViewCounts() {
         Set<String> keys = redisTemplate.keys("post:view:*");
         if (keys != null) {
@@ -459,13 +456,34 @@ public class PostServiceImpl implements PostService{
 
                 // 데이터베이스에 반영
                 Post post = postRepository.findById(postId).orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
-                post.setViewCount(viewCount); // 엔티티에 viewCount 필드 추가 필요
+                post.setViewCount(viewCount);
                 postRepository.save(post);
 
                 // Redis 데이터 초기화
                 redisTemplate.delete(key);
+
             }
         }
+        log.info("조회수 DB와 동기화");
+    }
+
+    @Scheduled(cron = "0 0 0 * * *") // 매일 자정 실행
+    public void updatePopularPostsCache() {
+        String redisPopularPostsKey = "post:popular";
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            List<PostSearchResponse> popularPosts = postRepository.getPopularPosts();
+            String serializedData = objectMapper.writeValueAsString(popularPosts);
+            redisTemplate.opsForValue().set(redisPopularPostsKey, serializedData, Duration.ofDays(1)); // 24시간 유지
+            log.info("인기 게시물 캐시 업데이트 완료.");
+        } catch (JsonProcessingException e) {
+            log.error("인기 게시물 데이터를 JSON으로 변환하는 중 오류 발생.", e);
+        } catch (Exception e) {
+            log.error("인기 게시물 캐시 업데이트 중 오류 발생.", e);
+        }
+
+        log.info("인기 게시물 캐싱 완료");
     }
 
 }
