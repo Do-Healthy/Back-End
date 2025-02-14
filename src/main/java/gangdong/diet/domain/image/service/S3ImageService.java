@@ -84,7 +84,16 @@ public class S3ImageService {
 
     // 파일 삭제
     public void deleteFile(String fileName) {
-        amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));
+        try {
+            if (amazonS3.doesObjectExist(bucket, fileName)) {
+                amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));
+            } else {
+                log.warn("S3 파일이 존재하지 않습니다: {}", fileName);
+            }
+        } catch (Exception e) {
+            log.error("S3 파일 삭제 실패: {}", e.getMessage());
+            throw new ApiException(ErrorCode.S3_DELETE_FAILED);
+        }
     }
 
     // 파일명 중복 방지 (UUID)

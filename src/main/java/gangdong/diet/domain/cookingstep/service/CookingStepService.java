@@ -36,10 +36,19 @@ public class CookingStepService {
         });
     }
 
+    @Transactional
     public void updateCookingSteps(List<CookingStepRequest> requests, Post post) {
 
-        post.getCookingSteps().forEach(cookingStep -> s3ImageService.deleteFile(cookingStep.getImageUrl()));
-        post.getCookingSteps().clear();
+        List<CookingStep> cookingSteps = post.getCookingSteps();
+
+        cookingSteps.forEach(cookingStep -> {
+            try {
+                s3ImageService.deleteFile(cookingStep.getImageUrl());
+            } catch (Exception e) {
+                log.error("S3 이미지 삭제 중 오류 발생: {}", e.getMessage());
+            }
+        });
+        cookingStepRepository.deleteAll(cookingSteps);
 
         requests.forEach(imageRequest -> {
             CookingStep cookingStep = CookingStep.builder().post(post)
@@ -49,6 +58,20 @@ public class CookingStepService {
 
             post.getCookingSteps().add(cookingStep);
         });
+    }
+
+    @Transactional
+    public void deleteCookingSteps(Post post) {
+        List<CookingStep> cookingSteps = post.getCookingSteps();
+
+        cookingSteps.forEach(cookingStep -> {
+            try {
+                s3ImageService.deleteFile(cookingStep.getImageUrl());
+            } catch (Exception e) {
+                log.error("S3 이미지 삭제 중 오류 발생: {}", e.getMessage());
+            }
+        });
+        cookingStepRepository.deleteAll(cookingSteps);
     }
 
 

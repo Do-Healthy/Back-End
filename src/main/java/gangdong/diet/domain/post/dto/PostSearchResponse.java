@@ -29,6 +29,9 @@ public class PostSearchResponse {
         this.isScrapped = isScrapped;
     }
 
+    public PostSearchResponse() {
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

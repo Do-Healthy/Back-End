@@ -29,16 +29,17 @@ public class PostController {
 
     @Operation(summary = "게시물 목록 조회", description = "키워드를 통해 게시물을 검색합니다. 키워드 간의 구분은 ,과 같은 쉼표로 합니다.")
     @GetMapping("") // 뭐라고 이름 줄까?
-    public ResponseEntity<Slice<PostSearchResponse>> getPostsByKeywords(@RequestParam(value = "cursorId", required = false) Long cursorId,
+    public ResponseEntity<Slice<PostSearchResponse>> getPostsByKeywords(@RequestParam(value = "category") String category,
+                                                                        @RequestParam(value = "cursorId", required = false) Long cursorId,
                                                                         @RequestParam(value = "keywords", required = false) String keywords,
                                                                         @RequestParam(value = "size") int size) {
-        return ResponseEntity.ok().body(postService.findByKeywords(cursorId, keywords, size));
+        return ResponseEntity.ok().body(postService.findByKeywords(category, cursorId, keywords, size));
     }
 
     @Operation(summary = "게시물 상세 조회", description = "게시물 id를 통해 게시물 1개를 조회합니다.")
-    @GetMapping("/{id}")
-    public ResponseEntity<PostResponse> getOnePostById(@PathVariable Long id) {
-        return ResponseEntity.ok().body(postService.getOnePost(id));
+    @GetMapping("/{recipeId}")
+    public ResponseEntity<PostResponse> getOnePostById(@PathVariable Long recipeId) {
+        return ResponseEntity.ok().body(postService.getOnePost(recipeId));
     }
 
     @Operation(summary = "게시물 저장")
@@ -51,21 +52,29 @@ public class PostController {
     }
 
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PostResponse> updatePost(@PathVariable Long id,
+    @PutMapping("/{recipeId}")
+    public ResponseEntity<PostResponse> updatePost(@PathVariable Long recipeId,
                                                    @RequestPart("postRequest") @Validated PostRequest postRequest,
 //                                                   @RequestPart("thumbnail") MultipartFile thumbnail,
 //                                                   @RequestPart(value = "postImages", required = false) List<MultipartFile> postImages,
                                                    @AuthenticationPrincipal MemberDetails memberDetails) {
 
-        return ResponseEntity.ok().body(postService.updatePost(id, postRequest, memberDetails));
+        return ResponseEntity.ok().body(postService.updatePost(recipeId, postRequest, memberDetails));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletePost(@PathVariable Long id, @AuthenticationPrincipal MemberDetails memberDetails) {
-        postService.deletePost(id, memberDetails);
+    @DeleteMapping("/{recipeId}")
+    public ResponseEntity<String> deletePost(@PathVariable Long recipeId, @AuthenticationPrincipal MemberDetails memberDetails) {
+        postService.deletePost(recipeId, memberDetails);
         return ResponseEntity.ok().body("삭제가 완료됐습니다.");
     }
+
+
+    @GetMapping("/populars")
+    public ResponseEntity<List<PostSearchResponse>> getPopularPosts() {
+        List<PostSearchResponse> responses = postService.getPopularPosts();
+        return ResponseEntity.ok().body(responses);
+    }
+
 
     @Operation(summary = "재료 추천 게시물 조회", description = "게시물 id를 통해 관련 추천 리스트를 조회 합니다.")
     @GetMapping("recommended/{id}")
@@ -87,6 +96,7 @@ public class PostController {
         PostResponse postResponse = postService.getSurveyPost(memberDetails);
         return ResponseEntity.ok(postResponse);
     }
+
 
 
 }

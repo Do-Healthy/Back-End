@@ -9,7 +9,9 @@ import gangdong.diet.domain.scrap.entity.Scrap;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
+import org.postgresql.util.PGobject;
 
+import java.sql.SQLException;
 import java.util.*;
 
 @Getter
@@ -46,7 +48,7 @@ public class Post extends BaseEntity {
 
     @Setter
     @Column(nullable = false)
-    private Integer viewCount = 0;
+    private Long viewCount = 0L;
 
     @Setter
     private Boolean isApproved;
@@ -76,9 +78,13 @@ public class Post extends BaseEntity {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CookingStep> cookingSteps = new ArrayList<>();
+//
+//    // 🔥 Full-Text Search를 위한 컬럼 추가
+//    @Column(columnDefinition = "tsvector")
+//    private String searchVector;
 
     @Builder
-    private Post(Long id, String title, String description, String cookingTime, String calories, String servings, String thumbnailUrl, String youtubeUrl, Integer viewCount, Member member, List<PostIngredient> postIngredients, List<PostNutrient> postNutrients, List<CookingStep> cookingSteps, Boolean isApproved, List<PostTag> postTags) {
+    private Post(Long id, String title, String description, String cookingTime, String calories, String servings, String thumbnailUrl, String youtubeUrl, Long viewCount, Member member, List<PostIngredient> postIngredients, List<PostNutrient> postNutrients, List<CookingStep> cookingSteps, Boolean isApproved, List<PostTag> postTags) {
         this.id = id;
         this.title = title;
         this.description = description;

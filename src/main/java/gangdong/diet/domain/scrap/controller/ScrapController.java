@@ -16,11 +16,11 @@ public class ScrapController {
 
     private final ScrapService scrapService;
 
-    @PatchMapping("/{postId}")
-    public ResponseEntity editScrap(@PathVariable Long postId, @AuthenticationPrincipal MemberDetails memberDetails) {
-        scrapService.editScrap(postId, memberDetails.getUsername());
+    @PatchMapping("/{recipeId}")
+    public ResponseEntity editScrap(@PathVariable Long recipeId, @AuthenticationPrincipal MemberDetails memberDetails) {
+        scrapService.editScrap(recipeId, memberDetails.getUsername());
 
-        return ResponseEntity.ok().body("스크랩 작업 완료");
+        return ResponseEntity.ok().body("스크랩을 완료했습니다.");
     }
 
 }

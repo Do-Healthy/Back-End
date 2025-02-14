@@ -29,7 +29,9 @@ public interface PostQRepository {
 
     List<Review> getReviews(Long postId);
 
-    public List<Scrap> getScraps(Long postId);
+    List<Scrap> getScraps(Long postId);
+
+    List<PostSearchResponse> getPopularPosts();
 
 //    List<Post> findAllPosts(Long cursorId, int size);
 

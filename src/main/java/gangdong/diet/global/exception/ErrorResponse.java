@@ -12,8 +12,8 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ErrorResponse {
     private final int code;
-    private final HttpStatus httpStatus;
     private final String message;
+    private final HttpStatus httpStatus;
     private final Map<String, String> validation;
 
     @Builder

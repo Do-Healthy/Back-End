@@ -1,7 +1,12 @@
 package gangdong.diet.domain.post.repository;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import gangdong.diet.domain.cookingstep.entity.CookingStep;
 import gangdong.diet.domain.ingredient.entity.Ingredient;
@@ -46,6 +51,7 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
                         eqCursorId(cursorId),
                         containsRecipeNameKeywords(keywords)  // 키워드 조건 추가
                 )
+                .orderBy(post.id.asc())
                 .limit(size + 1)  // 다음 페이지 유무 확인을 위해 한 개 더 요청
                 .fetch(); // 결과가 없으면 빈 리스트 반환함
 
@@ -72,6 +78,7 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
                         eqCursorId(cursorId),
                         findByKeywordOfIngredient(keywords)
                 )
+                .orderBy(post.id.asc())
                 .limit(size + 1)
                 .fetch();
 
@@ -166,22 +173,56 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
                 .fetch();
     }
 
+    @Override
+    public List<PostSearchResponse> getPopularPosts() {
+        // 리뷰 평점 평균
+        NumberExpression<Double> avgReviewScore = review.rating.avg().coalesce(0.0);
 
+        // 리뷰 개수
+        NumberExpression<Long> reviewCount = review.count().coalesce(0L);
 
+        // 스크랩 개수
+        NumberExpression<Long> scrapCount = scrap.count().coalesce(0L);
+
+        // 조회수 (Post 엔티티에 존재한다고 가정)
+        NumberExpression<Long> viewCount = post.viewCount.coalesce(0L);
+
+        // 가중치를 반영한 인기 점수 계산
+        NumberExpression<Double> popularityScore = scrapCount.doubleValue().multiply(0.35)
+                .add(reviewCount.doubleValue().multiply(0.35))
+                .add(avgReviewScore.multiply(0.2))
+                .add(viewCount.doubleValue().multiply(0.1));
+
+        return queryFactory
+                .select(Projections.constructor(
+                        PostSearchResponse.class, post.id, post.title, post.thumbnailUrl, post.cookingTime, post.calories, post.servings
+                ))
+                .from(post)
+                .leftJoin(review).on(review.post.id.eq(post.id)) // 리뷰와 조인
+                .leftJoin(scrap).on(scrap.post.id.eq(post.id)) // 스크랩과 조인
+                .groupBy(post.id)
+                .orderBy(popularityScore.desc()) // 가중치 적용 후 인기순 정렬
+                .limit(10) // 상위 10개 게시물 가져오기
+                .fetch();
+    }
 
     private BooleanExpression eqCursorId(Long cursorId) {
         return (cursorId == null) ? null : post.id.gt(cursorId);
     }
 
 
+    private static final double SIMILARITY_THRESHOLD = 0.3; // 여기 값 조정 가능
+
     private BooleanExpression containsRecipeNameKeywords(List<String> keywords) {
         if (CollectionUtils.isEmpty(keywords)) {
-            return null; // 현재 상황에서 keywords가 빈 값일 경우 이걸 쓰면 전체 반환됨. querydsl의 BooleanExpression이 null일 경우 조건에서 제외되고 다른 조건만 적용.
+            return null;
         }
 
-        // Querydsl의 anyOf()를 활용하여 OR 조건 생성
         return keywords.stream()
-                .map(keyword -> post.title.containsIgnoreCase(keyword))
+                .map(keyword -> post.title.likeIgnoreCase("%" + keyword + "%")  // ILIKE 추가
+                        .or(Expressions.numberTemplate(Double.class,
+                                        "similarity({0}, {1})", post.title, keyword)
+                                .gt(SIMILARITY_THRESHOLD)))
                 .reduce(BooleanExpression::or)
                 .orElse(post.id.isNull());
     }
@@ -195,7 +236,9 @@ public class PostQRepositoryImpl implements PostQRepository{ // TODO 중복된 �
         return post.id.in(
                 select(postIngredient.post.id).from(postIngredient)
                         .join(postIngredient.ingredient, ingredient)
-                        .where(ingredient.name.in(keywords)) // 한 번의 조건 처리
+                        .where(ingredient.name.in(keywords))
+                        .groupBy(postIngredient.post.id)
+                        .having(ingredient.name.count().eq((long) keywords.size()))
         );
     }
     @Override
